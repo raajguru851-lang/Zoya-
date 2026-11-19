@@ -26,6 +26,8 @@ jobs:
           flutter create --platforms=android --project-name assistant_app tmp_app
           cp -r tmp_app/android ./android
           rm -rf tmp_app
+          # Internet permission (release build me zaroori)
+          sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' android/app/src/main/AndroidManifest.xml
 
       - run: flutter pub get
       - run: flutter build apk --release
