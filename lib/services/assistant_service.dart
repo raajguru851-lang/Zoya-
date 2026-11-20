@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../features/modes/modes.dart';
+import 'phone_tools.dart';
 import 'settings_service.dart';
 
 class ChatMessage {
@@ -29,49 +30,85 @@ class AssistantService {
     }
 
     final mode = Modes.byId(await _settings.getMode());
-    final systemPrompt = '$basePrompt\n\nAbhi ka mode: ${mode.name}. ${mode.prompt}';
+    final systemPrompt = '$basePrompt\n\n'
+        'Abhi ka mode: ${mode.name}. ${mode.prompt}\n\n'
+        '${PhoneTools.prompt}';
 
     final uri = Uri.parse(
       'https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent',
     );
 
+    final contents = <Map<String, dynamic>>[
+      for (final m in history)
+        {
+          'role': m.isUser ? 'user' : 'model',
+          'parts': [
+            {'text': m.text}
+          ],
+        }
+    ];
+
     try {
-      final res = await http
-          .post(
-            uri,
-            headers: {
-              'Content-Type': 'application/json',
-              'x-goog-api-key': key,
-            },
-            body: jsonEncode({
-              'system_instruction': {
-                'parts': [
-                  {'text': systemPrompt}
-                ]
+      // Tool chalane ke baad AI ko natija dena padta hai, isliye loop.
+      for (var step = 0; step < 5; step++) {
+        final res = await http
+            .post(
+              uri,
+              headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': key,
               },
-              'contents': [
-                for (final m in history)
-                  {
-                    'role': m.isUser ? 'user' : 'model',
-                    'parts': [
-                      {'text': m.text}
-                    ],
-                  }
-              ],
-            }),
-          )
-          .timeout(const Duration(seconds: 60));
+              body: jsonEncode({
+                'system_instruction': {
+                  'parts': [
+                    {'text': systemPrompt}
+                  ]
+                },
+                'tools': [
+                  {'functionDeclarations': PhoneTools.declarations}
+                ],
+                'contents': contents,
+              }),
+            )
+            .timeout(const Duration(seconds: 60));
 
-      final data = jsonDecode(utf8.decode(res.bodyBytes));
+        final data = jsonDecode(utf8.decode(res.bodyBytes));
 
-      if (res.statusCode != 200) {
-        final msg = data['error']?['message'] ?? 'Error ${res.statusCode}';
-        return 'Error: $msg';
+        if (res.statusCode != 200) {
+          final msg = data['error']?['message'] ?? 'Error ${res.statusCode}';
+          return 'Error: $msg';
+        }
+
+        final content = data['candidates']?[0]?['content'];
+        if (content == null) return 'Jawab nahi mila, dobara try karo.';
+
+        final parts = (content['parts'] as List?) ?? [];
+        final calls =
+            parts.where((p) => p is Map && p['functionCall'] != null).toList();
+
+        if (calls.isEmpty) {
+          final text = parts.map((p) => p['text'] ?? '').join();
+          return text.isEmpty ? 'Ho gaya.' : text;
+        }
+
+        // AI ka poora message jaise ka taisa wapas bhejna zaroori hai.
+        contents.add(Map<String, dynamic>.from(content));
+
+        final responses = <Map<String, dynamic>>[];
+        for (final c in calls) {
+          final fc = c['functionCall'];
+          final args = Map<String, dynamic>.from((fc['args'] as Map?) ?? {});
+          final result = await PhoneTools.run('${fc['name']}', args);
+          responses.add({
+            'functionResponse': {
+              'name': fc['name'],
+              'response': {'result': result},
+            }
+          });
+        }
+        contents.add({'role': 'user', 'parts': responses});
       }
-
-      final parts = data['candidates']?[0]?['content']?['parts'];
-      if (parts == null) return 'Jawab nahi mila, dobara try karo.';
-      return parts.map((p) => p['text'] ?? '').join();
+      return 'Kaam poora nahi ho paya, dobara try karo.';
     } catch (e) {
       return 'Internet ya connection me dikkat: $e';
     }

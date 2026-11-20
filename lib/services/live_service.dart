@@ -6,6 +6,7 @@ import 'package:record/record.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../features/modes/modes.dart';
 import 'assistant_service.dart';
+import 'phone_tools.dart';
 import 'settings_service.dart';
 
 enum LiveState { idle, connecting, listening, speaking }
@@ -54,7 +55,7 @@ class LiveService {
     final prompt = '${AssistantService.basePrompt}\n\n'
         'Abhi ka mode: ${mode.name}. ${mode.prompt}\n\n'
         'Tum awaaz me baat kar rahi ho, isliye chhote, natural, bolchaal '
-        'wale jawab do.';
+        'wale jawab do.\n\n${PhoneTools.prompt}';
 
     try {
       await FlutterPcmSound.setup(sampleRate: 24000, channelCount: 1);
@@ -90,6 +91,9 @@ class LiveService {
               {'text': prompt}
             ]
           },
+          'tools': [
+            {'functionDeclarations': PhoneTools.declarations}
+          ],
           'inputAudioTranscription': {},
           'outputAudioTranscription': {},
         }
@@ -107,6 +111,25 @@ class LiveService {
       if (data.containsKey('setupComplete')) {
         _setupDone = true;
         await _startMic();
+        return;
+      }
+
+      // AI ne koi phone-action maanga hai
+      final tc = data['toolCall'];
+      if (tc is Map && tc['functionCalls'] is List) {
+        final responses = <Map<String, dynamic>>[];
+        for (final c in tc['functionCalls']) {
+          final args = Map<String, dynamic>.from((c['args'] as Map?) ?? {});
+          final result = await PhoneTools.run('${c['name']}', args);
+          responses.add({
+            'id': c['id'],
+            'name': c['name'],
+            'response': {'result': result},
+          });
+        }
+        _channel?.sink.add(jsonEncode({
+          'toolResponse': {'functionResponses': responses}
+        }));
         return;
       }
 
