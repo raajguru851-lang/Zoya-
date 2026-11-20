@@ -81,18 +81,18 @@ class _NeonBorderState extends State<NeonBorder>
   }
 }
 
-/// Screen ke dono kinare par upar-neeche daudti rangeen glowing lines.
-class SideLines extends StatefulWidget {
-  const SideLines({super.key});
+/// Poori screen ke chaaro kinaron par ghoomti 12 rangon ki line.
+class ScreenBorder extends StatefulWidget {
+  const ScreenBorder({super.key});
 
   @override
-  State<SideLines> createState() => _SideLinesState();
+  State<ScreenBorder> createState() => _ScreenBorderState();
 }
 
-class _SideLinesState extends State<SideLines>
+class _ScreenBorderState extends State<ScreenBorder>
     with SingleTickerProviderStateMixin {
   late final AnimationController _c =
-      AnimationController(vsync: this, duration: const Duration(seconds: 5))
+      AnimationController(vsync: this, duration: const Duration(seconds: 6))
         ..repeat();
 
   @override
@@ -101,36 +101,88 @@ class _SideLinesState extends State<SideLines>
     super.dispose();
   }
 
-  Widget _line(double t, double dir) {
-    return Container(
-      width: 3,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment(0, -1 + 2 * t * dir),
-          end: Alignment(0, 1 + 2 * t * dir),
-          colors: NeonColors.ring,
-          tileMode: TileMode.repeated,
-        ),
-        boxShadow: [
-          BoxShadow(color: NeonColors.cyan.withAlpha(110), blurRadius: 10),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _c,
-      builder: (context, _) {
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [_line(_c.value, 1), _line(_c.value, -1)],
-        );
-      },
+      builder: (context, _) => CustomPaint(
+        size: Size.infinite,
+        painter: _BorderPainter(_c.value),
+      ),
     );
   }
+}
+
+class _BorderPainter extends CustomPainter {
+  final double t;
+  _BorderPainter(this.t);
+
+  /// 12 rang. Speed badalni ho to upar duration (6 seconds) badlo.
+  static const _colors = <Color>[
+    Color(0xFFFF1744), // laal
+    Color(0xFFFF9100), // narangi
+    Color(0xFFFFEA00), // peela
+    Color(0xFF76FF03), // lime
+    Color(0xFF00E676), // hara
+    Color(0xFF1DE9B6), // teal
+    Color(0xFF00E5FF), // cyan
+    Color(0xFF2979FF), // neela
+    Color(0xFF651FFF), // indigo
+    Color(0xFFD500F9), // jamuni
+    Color(0xFFFF2BD6), // magenta
+    Color(0xFFFF4081), // gulabi
+  ];
+
+  Color _at(double x) {
+    x = x % 1.0;
+    if (x < 0) x += 1.0;
+    final f = x * _colors.length;
+    final i = f.floor();
+    return Color.lerp(
+      _colors[i % _colors.length],
+      _colors[(i + 1) % _colors.length],
+      f - i,
+    )!;
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const stroke = 4.0;
+    const radius = 36.0;
+    final rect = (Offset.zero & size).deflate(stroke / 2);
+    final path = Path()
+      ..addRRect(RRect.fromRectAndRadius(rect, const Radius.circular(radius)));
+    final metric = path.computeMetrics().first;
+    final len = metric.length;
+
+    // Glow (kam tukde, dhundhli roshni)
+    const glowSegs = 30;
+    final glow = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke * 2
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
+    for (var i = 0; i < glowSegs; i++) {
+      final a = len * i / glowSegs;
+      final b = math.min(len, len * (i + 1) / glowSegs + 1);
+      glow.color = _at(i / glowSegs - t).withAlpha(110);
+      canvas.drawPath(metric.extractPath(a, b), glow);
+    }
+
+    // Asli line
+    const segs = 120;
+    final line = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke;
+    for (var i = 0; i < segs; i++) {
+      final a = len * i / segs;
+      final b = math.min(len, len * (i + 1) / segs + 1);
+      line.color = _at(i / segs - t);
+      canvas.drawPath(metric.extractPath(a, b), line);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_BorderPainter old) => old.t != t;
 }
 
 /// 3D jaisa tirchha, glow wala button (home screen ke liye).

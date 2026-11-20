@@ -21,7 +21,7 @@ class AssistantApp extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           child ?? const SizedBox.shrink(),
-          const IgnorePointer(child: SideLines()),
+          const IgnorePointer(child: ScreenBorder()),
         ],
       ),
       initialRoute: AppRoutes.home,
