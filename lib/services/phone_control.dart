@@ -46,6 +46,31 @@ class PhoneControl {
     }
   }
 
+  /// Background (foreground service) shuru/band, notification permission.
+  Future<bool> startForeground() async {
+    try {
+      return (await _ch.invokeMethod<bool>('startForeground')) ?? false;
+    } on PlatformException {
+      return false;
+    }
+  }
+
+  Future<void> stopForeground() async {
+    try {
+      await _ch.invokeMethod('stopForeground');
+    } on PlatformException {
+      // ignore
+    }
+  }
+
+  Future<void> requestNotif() async {
+    try {
+      await _ch.invokeMethod('requestNotif');
+    } on PlatformException {
+      // ignore
+    }
+  }
+
   /// Earphones/bluetooth headset laga hai ya nahi.
   Future<bool> hasHeadphones() async {
     try {

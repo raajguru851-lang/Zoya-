@@ -40,6 +40,28 @@ class MainActivity : FlutterActivity() {
                         }
                         result.success(found)
                     }
+                    "startForeground" -> {
+                        try {
+                            val i = Intent(this, ZoyaForegroundService::class.java)
+                            if (Build.VERSION.SDK_INT >= 26) startForegroundService(i)
+                            else startService(i)
+                            result.success(true)
+                        } catch (e: Exception) {
+                            result.success(false)
+                        }
+                    }
+                    "stopForeground" -> {
+                        stopService(Intent(this, ZoyaForegroundService::class.java))
+                        result.success(true)
+                    }
+                    "requestNotif" -> {
+                        if (Build.VERSION.SDK_INT >= 33) {
+                            requestPermissions(
+                                arrayOf(Manifest.permission.POST_NOTIFICATIONS), 101
+                            )
+                        }
+                        result.success(true)
+                    }
                     "refreshBorder" -> {
                         svc?.refreshBorder()
                         result.success(svc != null)

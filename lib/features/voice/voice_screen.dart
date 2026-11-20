@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/live_service.dart';
 import '../../services/phone_control.dart';
+import '../../services/wake_service.dart';
 import '../../services/settings_service.dart';
 import '../../widgets/zoya_orb.dart';
 import '../modes/modes.dart';
@@ -31,6 +32,10 @@ class _VoiceScreenState extends State<VoiceScreen> {
   @override
   void initState() {
     super.initState();
+    WakeService.instance.pause(); // mic is screen ke liye
+    _live.onSleep = () {
+      _live.stop();
+    };
     SettingsService().getMode().then((id) {
       if (mounted) setState(() => _mode = Modes.byId(id));
     });
@@ -73,6 +78,7 @@ class _VoiceScreenState extends State<VoiceScreen> {
     _live.onTurnComplete = null;
     _live.onError = null;
     _live.stop();
+    WakeService.instance.resume();
     super.dispose();
   }
 

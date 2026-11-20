@@ -36,4 +36,25 @@ class SettingsService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('zoya_active', v);
   }
+
+  Future<String?> getPicoKey() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('picovoice_key');
+  }
+
+  Future<void> setPicoKey(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('picovoice_key', key.trim());
+  }
+
+  /// "Wake up Zoya" background sunna ON hai ya nahi.
+  Future<bool> getWake() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('wake_on') ?? false;
+  }
+
+  Future<void> setWake(bool v) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('wake_on', v);
+  }
 }

@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:record/record.dart';
 import '../../services/phone_control.dart';
 import '../../services/settings_service.dart';
+import '../../services/wake_service.dart';
 import '../../widgets/neon.dart';
 
-/// Zoya Active switch. Permissions poori hon aur switch ON ho, tabhi
-/// screen ke kinare rangeen light ghoomti hai.
+/// Zoya Active switch + "Wake up Zoya" switch.
+/// Permissions poori hon aur switch ON ho, tabhi rangeen light ghoomti hai.
 class ActiveCard extends StatefulWidget {
   const ActiveCard({super.key});
 
@@ -19,6 +20,7 @@ class _ActiveCardState extends State<ActiveCard> with WidgetsBindingObserver {
   bool _acc = false;
   bool _mic = false;
   bool _on = false;
+  bool _wake = false;
 
   @override
   void initState() {
@@ -45,21 +47,54 @@ class _ActiveCardState extends State<ActiveCard> with WidgetsBindingObserver {
     if (on && !(acc && mic)) {
       on = false;
       await _settings.setActive(false);
+      await _settings.setWake(false);
+      await WakeService.instance.stop();
     }
+    final wake = on && await _settings.getWake();
     if (!mounted) return;
     setState(() {
       _acc = acc;
       _mic = mic;
       _on = on;
+      _wake = wake;
     });
     await _pc.refreshBorder();
+    if (wake) await WakeService.instance.ensureRunning();
   }
 
   Future<void> _toggle(bool v) async {
     if (v && !(_acc && _mic)) return;
     await _settings.setActive(v);
+    if (!v) {
+      await _settings.setWake(false);
+      await WakeService.instance.stop();
+    }
     await _pc.refreshBorder();
-    if (mounted) setState(() => _on = v);
+    if (mounted) {
+      setState(() {
+        _on = v;
+        if (!v) _wake = false;
+      });
+    }
+  }
+
+  Future<void> _toggleWake(bool v) async {
+    if (v) {
+      await _pc.requestNotif();
+      final err = await WakeService.instance.start();
+      if (err != null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(err)));
+        }
+        return;
+      }
+      await _settings.setWake(true);
+    } else {
+      await WakeService.instance.stop();
+      await _settings.setWake(false);
+    }
+    if (mounted) setState(() => _wake = v);
   }
 
   Future<void> _askMic() async {
@@ -112,6 +147,20 @@ class _ActiveCardState extends State<ActiveCard> with WidgetsBindingObserver {
             _row('Accessibility (phone control)', _acc,
                 _pc.openAccessibilitySettings),
             _row('Microphone', _mic, _askMic),
+            const Divider(height: 24),
+            Row(
+              children: [
+                const Expanded(
+                  child: Text('"Wake up Zoya" (background)',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
+                ),
+                Switch(value: _wake, onChanged: _on ? _toggleWake : null),
+              ],
+            ),
+            const Text(
+              'ON karne par notification dikhegi, aur Zoya naam sunte hi jaag jayegi.',
+              style: TextStyle(fontSize: 12),
+            ),
           ],
         ),
       ),

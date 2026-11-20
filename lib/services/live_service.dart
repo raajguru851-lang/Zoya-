@@ -35,6 +35,16 @@ class LiveService {
   /// true: Zoya bol rahi ho tab bhi tum beech me tok sakte ho. Sirf earphones
   /// me ON rakho, speaker me Zoya khud ki awaaz sun leti hai.
   bool bargeIn = false;
+  bool _sleepPending = false;
+
+  /// Zoya ne 'sleep_now' bola: baat khatam, ab so jao.
+  void Function()? onSleep;
+
+  static const _sleepDecl = <String, dynamic>{
+    'name': 'sleep_now',
+    'description':
+        'Baat khatam hone par call karo, jab user bye, so ja ya bas kahe.',
+  };
   DateTime _speakUntil = DateTime.fromMillisecondsSinceEpoch(0);
 
   void Function(LiveState state)? onState;
@@ -62,7 +72,9 @@ class LiveService {
         'Abhi ka mode: ${mode.name}. ${mode.prompt}\n\n'
         'Tum awaaz me baat kar rahi ho, isliye chhote, natural, bolchaal '
         'wale jawab do. Agar user "ruk jao", "stop" ya "chup" bole to turant '
-        'ruk jao aur sirf "theek hai" kaho.\n\n${PhoneTools.prompt}';
+        'ruk jao aur sirf "theek hai" kaho. Jab user baat khatam kare '
+        '("bye", "so ja", "bas") to sleep_now tool call karo aur chhota '
+        'alvida bolo.\n\n${PhoneTools.prompt}';
 
     try {
       await FlutterPcmSound.setup(sampleRate: 24000, channelCount: 1);
@@ -99,7 +111,9 @@ class LiveService {
             ]
           },
           'tools': [
-            {'functionDeclarations': PhoneTools.declarations}
+            {
+              'functionDeclarations': [...PhoneTools.declarations, _sleepDecl]
+            }
           ],
           'inputAudioTranscription': {},
           'outputAudioTranscription': {},
@@ -127,7 +141,13 @@ class LiveService {
         final responses = <Map<String, dynamic>>[];
         for (final c in tc['functionCalls']) {
           final args = Map<String, dynamic>.from((c['args'] as Map?) ?? {});
-          final result = await PhoneTools.run('${c['name']}', args);
+          String result;
+          if (c['name'] == 'sleep_now') {
+            _sleepPending = true;
+            result = 'ok';
+          } else {
+            result = await PhoneTools.run('${c['name']}', args);
+          }
           responses.add({
             'id': c['id'],
             'name': c['name'],
@@ -182,6 +202,13 @@ class LiveService {
         _dropAudio = false;
         onTurnComplete?.call();
         _scheduleListening();
+        if (_sleepPending) {
+          _sleepPending = false;
+          final wait = _speakUntil
+              .add(const Duration(milliseconds: 400))
+              .difference(DateTime.now());
+          Timer(wait.isNegative ? Duration.zero : wait, () => onSleep?.call());
+        }
       }
     } catch (e) {
       // Ek kharab message se poora session band nahi karna.

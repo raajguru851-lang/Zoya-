@@ -26,6 +26,18 @@ service = '''
                 android:resource="@xml/accessibility_service_config"/>
         </service>
     '''
+perms = ''.join(
+    '<uses-permission android:name="android.permission.%s"/>\n    ' % p
+    for p in ['FOREGROUND_SERVICE', 'FOREGROUND_SERVICE_MICROPHONE', 'POST_NOTIFICATIONS']
+)
+s = s.replace('<application', perms + '<application', 1)
+
+service += '''
+        <service
+            android:name=".ZoyaForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="microphone"/>
+    '''
 s = s.replace('</application>', service + '</application>', 1)
 open(p, 'w').write(s)
 print('manifest patched')
