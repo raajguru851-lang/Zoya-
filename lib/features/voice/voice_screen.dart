@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/live_service.dart';
 import '../../services/phone_control.dart';
-import '../../services/wake_service.dart';
 import '../../services/settings_service.dart';
 import '../../widgets/zoya_orb.dart';
 import '../modes/modes.dart';
@@ -25,6 +24,7 @@ class _VoiceScreenState extends State<VoiceScreen> {
   AssistantMode _mode = Modes.all.first;
   String? _error;
   bool _barge = false;
+  int _orbIndex = 0;
   String _userBuf = '';
   String _zoyaBuf = '';
   final List<_Line> _lines = [];
@@ -32,7 +32,9 @@ class _VoiceScreenState extends State<VoiceScreen> {
   @override
   void initState() {
     super.initState();
-    WakeService.instance.pause(); // mic is screen ke liye
+    SettingsService().getOrb().then((v) {
+      if (mounted) setState(() => _orbIndex = v);
+    });
     _live.onSleep = () {
       _live.stop();
     };
@@ -78,7 +80,6 @@ class _VoiceScreenState extends State<VoiceScreen> {
     _live.onTurnComplete = null;
     _live.onError = null;
     _live.stop();
-    WakeService.instance.resume();
     super.dispose();
   }
 
@@ -139,7 +140,7 @@ class _VoiceScreenState extends State<VoiceScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 12),
-            child: ZoyaOrb(state: _state),
+            child: ZoyaOrb(state: _state, design: OrbDesigns.at(_orbIndex)),
           ),
           Padding(
             padding: const EdgeInsets.all(16),

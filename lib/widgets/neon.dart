@@ -263,3 +263,91 @@ class _NeonTileState extends State<NeonTile> {
     );
   }
 }
+
+
+/// Dashboard ka ek chhota dabba (icon + naam + chhoti line).
+class NeonGridTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final VoidCallback onTap;
+  final bool dim;
+
+  const NeonGridTile({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.onTap,
+    this.subtitle,
+    this.dim = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: dim ? 0.55 : 1.0,
+      child: Material(
+        color: NeonColors.card,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: NeonColors.purple.withAlpha(140), width: 1.4),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 30, color: NeonColors.cyan),
+                const SizedBox(height: 8),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.w600),
+                ),
+                if (subtitle != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      subtitle!,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: NeonColors.cyan.withAlpha(200)),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Widgets ko 2 kolam me lagata hai. Aakhri akela ho to poori chaudai leta hai.
+Widget neonRows(List<Widget> tiles, {double gap = 12, double height = 108}) {
+  final rows = <Widget>[];
+  for (var i = 0; i < tiles.length; i += 2) {
+    final pair = i + 1 < tiles.length;
+    rows.add(Padding(
+      padding: EdgeInsets.only(bottom: gap),
+      child: SizedBox(
+        height: height,
+        child: Row(
+          children: [
+            Expanded(child: tiles[i]),
+            if (pair) ...[
+              SizedBox(width: gap),
+              Expanded(child: tiles[i + 1]),
+            ],
+          ],
+        ),
+      ),
+    ));
+  }
+  return Column(children: rows);
+}

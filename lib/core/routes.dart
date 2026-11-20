@@ -5,6 +5,7 @@ import '../features/chat/chat_screen.dart';
 import '../features/modes/modes_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/voice/voice_screen.dart';
+import '../features/wake/wake_screen.dart';
 
 /// Naya screen add karna ho to yahan ek route jodo.
 class AppRoutes {
@@ -12,6 +13,7 @@ class AppRoutes {
   static const chat = '/chat';
   static const control = '/control';
   static const voice = '/voice';
+  static const wake = '/wake';
   static const modes = '/modes';
   static const settings = '/settings';
 
@@ -20,6 +22,7 @@ class AppRoutes {
     chat: (_) => const ChatScreen(),
     control: (_) => const ControlScreen(),
     voice: (_) => const VoiceScreen(),
+    wake: (_) => const WakeScreen(),
     modes: (_) => const ModesScreen(),
     settings: (_) => const SettingsScreen(),
   };

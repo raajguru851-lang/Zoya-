@@ -57,4 +57,26 @@ class SettingsService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('wake_on', v);
   }
+
+  /// Gola (orb) design number (0-9).
+  Future<int> getOrb() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('orb_design') ?? 0;
+  }
+
+  Future<void> setOrb(int i) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('orb_design', i);
+  }
+
+  /// Kitne second chup rehne par Zoya so jaye (5, 10 ya 15).
+  Future<int> getAutoStop() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('auto_stop') ?? 10;
+  }
+
+  Future<void> setAutoStop(int sec) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('auto_stop', sec);
+  }
 }

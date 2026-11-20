@@ -3,12 +3,103 @@ import 'package:flutter/material.dart';
 import '../services/live_service.dart';
 import 'neon.dart';
 
-/// Voice screen ka 3D chamakta gola. Halat ke hisaab se rang aur dhadkan badalti hai.
+/// Gola ka ek design: [chamak, mukhya rang, gehra rang].
+class OrbDesign {
+  final String name;
+  final List<Color> colors;
+  const OrbDesign(this.name, this.colors);
+}
+
+class OrbDesigns {
+  static const all = <OrbDesign>[
+    OrbDesign('Siri Original',
+        [Color(0xFFB39DFF), Color(0xFF5B6CFF), Color(0xFFFF6FB5)]),
+    OrbDesign('Ocean Blue',
+        [Color(0xFF7DF9FF), Color(0xFF1E88E5), Color(0xFF00BFA5)]),
+    OrbDesign('Neon Pink',
+        [Color(0xFFFF9BEA), Color(0xFFFF2BD6), Color(0xFF7B1FA2)]),
+    OrbDesign('Emerald',
+        [Color(0xFFC6FF00), Color(0xFF00E676), Color(0xFF006064)]),
+    OrbDesign('Sunset',
+        [Color(0xFFFFE082), Color(0xFFFF7043), Color(0xFFD81B60)]),
+    OrbDesign('Violet',
+        [Color(0xFFE1BEE7), Color(0xFF8E24AA), Color(0xFF311B92)]),
+    OrbDesign('Aurora',
+        [Color(0xFF69F0AE), Color(0xFF40C4FF), Color(0xFFAA00FF)]),
+    OrbDesign('Gold',
+        [Color(0xFFFFF8E1), Color(0xFFFFC107), Color(0xFFE65100)]),
+    OrbDesign('Ruby',
+        [Color(0xFFFF8A80), Color(0xFFE53935), Color(0xFF4A0000)]),
+    OrbDesign('Ice',
+        [Color(0xFFFFFFFF), Color(0xFF80DEEA), Color(0xFF3949AB)]),
+  ];
+
+  static OrbDesign at(int i) => all[i.clamp(0, all.length - 1)];
+}
+
+/// Ek sthir (na hilne wala) chamakta gola.
+class OrbBall extends StatelessWidget {
+  final OrbDesign design;
+  final double size;
+  final double glow;
+
+  const OrbBall({
+    super.key,
+    required this.design,
+    this.size = 72,
+    this.glow = 1.0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = design.colors;
+    final shadowAlpha = (150 * glow).round().clamp(0, 255);
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          center: const Alignment(-0.35, -0.45),
+          radius: 1.0,
+          colors: [Colors.white.withAlpha(235), c[0], c[1], c[2]],
+          stops: const [0.0, 0.22, 0.6, 1.0],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: c[1].withAlpha(shadowAlpha),
+            blurRadius: size * 0.25,
+            spreadRadius: size * 0.03,
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topRight,
+              end: Alignment.bottomLeft,
+              colors: [c[2].withAlpha(130), Colors.transparent],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Voice screen ka chalta hua gola. Halat ke hisaab se dhadkan badalti hai.
 class ZoyaOrb extends StatefulWidget {
   final LiveState state;
+  final OrbDesign design;
   final double size;
 
-  const ZoyaOrb({super.key, required this.state, this.size = 150});
+  const ZoyaOrb({
+    super.key,
+    required this.state,
+    required this.design,
+    this.size = 150,
+  });
 
   @override
   State<ZoyaOrb> createState() => _ZoyaOrbState();
@@ -26,29 +117,34 @@ class _ZoyaOrbState extends State<ZoyaOrb>
     super.dispose();
   }
 
-  Color get _color {
-    switch (widget.state) {
-      case LiveState.idle:
-        return NeonColors.purple;
-      case LiveState.connecting:
-        return const Color(0xFFFFC400);
-      case LiveState.listening:
-        return NeonColors.cyan;
-      case LiveState.speaking:
-        return NeonColors.magenta;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final s = widget.size;
     return AnimatedBuilder(
       animation: _c,
       builder: (context, _) {
-        final speed = widget.state == LiveState.speaking ? 3.0 : 1.0;
-        final amp = widget.state == LiveState.idle ? 0.015 : 0.05;
+        double speed;
+        double amp;
+        switch (widget.state) {
+          case LiveState.idle:
+            speed = 1;
+            amp = 0.015;
+            break;
+          case LiveState.connecting:
+            speed = 2;
+            amp = 0.03;
+            break;
+          case LiveState.listening:
+            speed = 1;
+            amp = 0.04;
+            break;
+          case LiveState.speaking:
+            speed = 3;
+            amp = 0.07;
+            break;
+        }
         final pulse = 1 + amp * math.sin(_c.value * 2 * math.pi * speed);
-        final color = _color;
+        final glow = widget.state == LiveState.idle ? 0.5 : 1.0;
 
         return SizedBox(
           width: s * 1.3,
@@ -56,7 +152,6 @@ class _ZoyaOrbState extends State<ZoyaOrb>
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // ghoomti rangeen ring
               Transform.rotate(
                 angle: _c.value * 2 * math.pi,
                 child: Container(
@@ -76,33 +171,9 @@ class _ZoyaOrbState extends State<ZoyaOrb>
                   color: NeonColors.bg,
                 ),
               ),
-              // 3D gola
               Transform.scale(
                 scale: pulse,
-                child: Container(
-                  width: s,
-                  height: s,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      center: const Alignment(-0.3, -0.4),
-                      radius: 0.95,
-                      colors: [
-                        Colors.white,
-                        color,
-                        Color.lerp(color, Colors.black, 0.65)!,
-                      ],
-                      stops: const [0.0, 0.45, 1.0],
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: color.withAlpha(150),
-                        blurRadius: 40,
-                        spreadRadius: 4,
-                      ),
-                    ],
-                  ),
-                ),
+                child: OrbBall(design: widget.design, size: s, glow: glow),
               ),
             ],
           ),
