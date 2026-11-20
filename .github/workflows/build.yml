@@ -31,6 +31,12 @@ jobs:
           # Mic permission + minSdk 24 (record package ke liye)
           sed -i 's#<application#<uses-permission android:name="android.permission.RECORD_AUDIO"/>\n    <application#' android/app/src/main/AndroidManifest.xml
           sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 24/; s/minSdkVersion flutter.minSdkVersion/minSdkVersion 24/' android/app/build.gradle.kts android/app/build.gradle 2>/dev/null || true
+          # Zoya ka native (Kotlin) code: phone control
+          cp native/kotlin/*.kt android/app/src/main/kotlin/com/example/assistant_app/
+          mkdir -p android/app/src/main/res/xml
+          cp native/res/xml/*.xml android/app/src/main/res/xml/
+          cp native/res/values/*.xml android/app/src/main/res/values/
+          python3 native/patch_manifest.py
           # Internet permission (release build me zaroori)
           sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' android/app/src/main/AndroidManifest.xml
 

@@ -11,6 +11,7 @@ class HomeScreen extends StatelessWidget {
     final features = <_Feature>[
       _Feature('Chat', Icons.chat_bubble_outline, AppRoutes.chat),
       _Feature('Voice (Zoya se bolkar baat)', Icons.mic_none, AppRoutes.voice),
+      _Feature('Phone Control', Icons.phone_android, AppRoutes.control),
       _Feature('Modes', Icons.face_outlined, AppRoutes.modes),
       _Feature('Settings', Icons.settings_outlined, AppRoutes.settings),
       // Naye features yahan add honge
