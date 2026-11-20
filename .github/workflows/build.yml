@@ -28,6 +28,9 @@ jobs:
           rm -rf tmp_app
           # App ka naam (phone me icon ke neeche)
           sed -i 's#android:label="[^"]*"#android:label="Zoya"#' android/app/src/main/AndroidManifest.xml
+          # Mic permission + minSdk 24 (record package ke liye)
+          sed -i 's#<application#<uses-permission android:name="android.permission.RECORD_AUDIO"/>\n    <application#' android/app/src/main/AndroidManifest.xml
+          sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 24/; s/minSdkVersion flutter.minSdkVersion/minSdkVersion 24/' android/app/build.gradle.kts android/app/build.gradle 2>/dev/null || true
           # Internet permission (release build me zaroori)
           sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' android/app/src/main/AndroidManifest.xml
 
