@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../features/modes/modes.dart';
 import 'settings_service.dart';
 
 class ChatMessage {
@@ -13,9 +14,9 @@ class AssistantService {
   // Model ka naam badalna ho to sirf yahan badlo.
   static const model = 'gemini-2.5-flash';
 
-  static const systemPrompt =
-      'Tum ek helpful assistant ho. User jis bhasha me likhe, usi me chhota '
-      'aur saaf jawab do.';
+  static const basePrompt =
+      'Tumhara naam Zoya hai, tum user ki personal assistant ho. User jis '
+      'bhasha me likhe, usi me chhota aur saaf jawab do.';
 
   final _settings = SettingsService();
 
@@ -24,6 +25,9 @@ class AssistantService {
     if (key == null || key.isEmpty) {
       return 'Pehle Settings me Gemini API key daalo.';
     }
+
+    final mode = Modes.byId(await _settings.getMode());
+    final systemPrompt = '$basePrompt\n\nAbhi ka mode: ${mode.name}. ${mode.prompt}';
 
     final uri = Uri.parse(
       'https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent',

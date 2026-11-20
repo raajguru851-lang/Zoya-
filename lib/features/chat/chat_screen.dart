@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../core/routes.dart';
 import '../../services/assistant_service.dart';
+import '../../services/settings_service.dart';
+import '../modes/modes.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -14,6 +17,20 @@ class _ChatScreenState extends State<ChatScreen> {
   final _service = AssistantService();
   final List<ChatMessage> _messages = [];
   bool _loading = false;
+
+  AssistantMode _mode = Modes.all.first;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMode();
+  }
+
+  Future<void> _loadMode() async {
+    final id = await SettingsService().getMode();
+    if (!mounted) return;
+    setState(() => _mode = Modes.byId(id));
+  }
 
   void _scrollDown() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -58,8 +75,16 @@ class _ChatScreenState extends State<ChatScreen> {
     final cs = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chat'),
+        title: Text('${_mode.emoji} ${_mode.name}'),
         actions: [
+          IconButton(
+            tooltip: 'Mode badlo',
+            icon: const Icon(Icons.tune),
+            onPressed: () async {
+              await Navigator.pushNamed(context, AppRoutes.modes);
+              _loadMode();
+            },
+          ),
           IconButton(
             tooltip: 'Chat saaf karo',
             icon: const Icon(Icons.delete_outline),

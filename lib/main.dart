@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'core/constants.dart';
 import 'core/theme.dart';
 import 'core/routes.dart';
 
@@ -10,7 +11,7 @@ class AssistantApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Assistant',
+      title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
