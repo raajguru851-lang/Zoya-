@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/live_service.dart';
+import '../../services/phone_control.dart';
 import '../../services/settings_service.dart';
 import '../../widgets/zoya_orb.dart';
 import '../modes/modes.dart';
@@ -22,7 +23,7 @@ class _VoiceScreenState extends State<VoiceScreen> {
   LiveState _state = LiveState.idle;
   AssistantMode _mode = Modes.all.first;
   String? _error;
-  bool _barge = true;
+  bool _barge = false;
   String _userBuf = '';
   String _zoyaBuf = '';
   final List<_Line> _lines = [];
@@ -77,7 +78,13 @@ class _VoiceScreenState extends State<VoiceScreen> {
 
   Future<void> _toggle() async {
     if (_state == LiveState.idle) {
-      setState(() => _error = null);
+      // Earphones lage hain to beech me tokna ON, speaker me OFF.
+      final hp = await PhoneControl().hasHeadphones();
+      _live.bargeIn = hp;
+      setState(() {
+        _error = null;
+        _barge = hp;
+      });
       await _live.start();
     } else {
       await _live.stop();
@@ -174,7 +181,7 @@ class _VoiceScreenState extends State<VoiceScreen> {
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
             child: Text(
-              'Tip: earphones lagao to awaaz sabse saaf chalti hai.',
+              'Speaker me Zoya bolte waqt sunti nahi. Earphones lagao to beech me tok sakte ho.',
               style: TextStyle(fontSize: 12),
               textAlign: TextAlign.center,
             ),

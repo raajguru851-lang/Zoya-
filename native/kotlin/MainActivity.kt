@@ -1,8 +1,12 @@
 package com.example.assistant_app
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.AudioDeviceInfo
+import android.media.AudioManager
+import android.os.Build
 import android.provider.Settings
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -20,6 +24,22 @@ class MainActivity : FlutterActivity() {
                         checkSelfPermission(Manifest.permission.RECORD_AUDIO) ==
                             PackageManager.PERMISSION_GRANTED
                     )
+                    "hasHeadphones" -> {
+                        val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                        var found = false
+                        for (d in am.getDevices(AudioManager.GET_DEVICES_OUTPUTS)) {
+                            when (d.type) {
+                                AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
+                                AudioDeviceInfo.TYPE_WIRED_HEADSET,
+                                AudioDeviceInfo.TYPE_USB_HEADSET,
+                                AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
+                                AudioDeviceInfo.TYPE_BLUETOOTH_SCO -> found = true
+                            }
+                            if (Build.VERSION.SDK_INT >= 31 &&
+                                d.type == AudioDeviceInfo.TYPE_BLE_HEADSET) found = true
+                        }
+                        result.success(found)
+                    }
                     "refreshBorder" -> {
                         svc?.refreshBorder()
                         result.success(svc != null)

@@ -32,8 +32,9 @@ class LiveService {
   bool _flushing = false;
   bool _dropAudio = false;
 
-  /// true: Zoya bol rahi ho tab bhi tum beech me tok sakte ho (earphones best).
-  bool bargeIn = true;
+  /// true: Zoya bol rahi ho tab bhi tum beech me tok sakte ho. Sirf earphones
+  /// me ON rakho, speaker me Zoya khud ki awaaz sun leti hai.
+  bool bargeIn = false;
   DateTime _speakUntil = DateTime.fromMillisecondsSinceEpoch(0);
 
   void Function(LiveState state)? onState;
@@ -199,7 +200,7 @@ class LiveService {
       if (!_setupDone || !_active) return;
       if (!bargeIn) {
         // Zoya bol rahi ho to mic band rakho (apni awaaz na sune).
-        final until = _speakUntil.add(const Duration(milliseconds: 300));
+        final until = _speakUntil.add(const Duration(milliseconds: 700));
         if (DateTime.now().isBefore(until)) return;
       }
       _channel?.sink.add(jsonEncode({

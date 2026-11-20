@@ -46,6 +46,15 @@ class PhoneControl {
     }
   }
 
+  /// Earphones/bluetooth headset laga hai ya nahi.
+  Future<bool> hasHeadphones() async {
+    try {
+      return (await _ch.invokeMethod<bool>('hasHeadphones')) ?? false;
+    } on PlatformException {
+      return false;
+    }
+  }
+
   /// Rangeen border dikhana/chhupana (Zoya Active ke hisaab se).
   Future<void> refreshBorder() async {
     try {
