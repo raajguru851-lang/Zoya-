@@ -12,7 +12,7 @@ class ChatMessage {
 /// Gemini se baat karne ka kaam yahin hota hai.
 class AssistantService {
   // Model ka naam badalna ho to sirf yahan badlo.
-  static const model = 'gemini-2.5-flash';
+  static const model = 'gemini-3.8-flash';
 
   static const basePrompt =
       'Tumhara naam Zoya hai, tum user ki personal assistant ho. User jis '
