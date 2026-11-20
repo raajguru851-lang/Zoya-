@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants.dart';
 import '../../core/routes.dart';
 import '../../widgets/neon.dart';
+import '../active/active_card.dart';
 
 /// Naya feature = features list me ek line.
 class HomeScreen extends StatelessWidget {
@@ -37,6 +38,8 @@ class HomeScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
         children: [
+          const ActiveCard(),
+          const SizedBox(height: 8),
           for (final f in features)
             NeonTile(
               icon: f.icon,

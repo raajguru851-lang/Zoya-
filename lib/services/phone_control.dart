@@ -37,4 +37,21 @@ class PhoneControl {
   Future<bool> scrollUp() => _call('scrollUp');
   Future<bool> tapText(String text) => _call('tapText', text);
   Future<bool> openApp(String name) => _call('openApp', name);
+
+  Future<bool> hasMic() async {
+    try {
+      return (await _ch.invokeMethod<bool>('hasMic')) ?? false;
+    } on PlatformException {
+      return false;
+    }
+  }
+
+  /// Rangeen border dikhana/chhupana (Zoya Active ke hisaab se).
+  Future<void> refreshBorder() async {
+    try {
+      await _ch.invokeMethod('refreshBorder');
+    } on PlatformException {
+      // ignore
+    }
+  }
 }

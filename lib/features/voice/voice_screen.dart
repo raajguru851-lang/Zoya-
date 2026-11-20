@@ -22,6 +22,7 @@ class _VoiceScreenState extends State<VoiceScreen> {
   LiveState _state = LiveState.idle;
   AssistantMode _mode = Modes.all.first;
   String? _error;
+  bool _barge = true;
   String _userBuf = '';
   String _zoyaBuf = '';
   final List<_Line> _lines = [];
@@ -107,7 +108,20 @@ class _VoiceScreenState extends State<VoiceScreen> {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: Text('${_mode.emoji} Voice • ${LiveService.voiceName}')),
+      appBar: AppBar(
+        title: Text('${_mode.emoji} Voice • ${LiveService.voiceName}'),
+        actions: [
+          IconButton(
+            tooltip: _barge ? 'Beech me tokna: ON' : 'Beech me tokna: OFF',
+            icon: Icon(
+                _barge ? Icons.record_voice_over : Icons.voice_over_off),
+            onPressed: () => setState(() {
+              _barge = !_barge;
+              _live.bargeIn = _barge;
+            }),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Padding(
@@ -119,6 +133,12 @@ class _VoiceScreenState extends State<VoiceScreen> {
             child: Text(_statusText,
                 style: Theme.of(context).textTheme.titleMedium),
           ),
+          if (_state == LiveState.speaking)
+            TextButton.icon(
+              onPressed: _live.silence,
+              icon: const Icon(Icons.volume_off),
+              label: const Text('Chup karo'),
+            ),
           if (_error != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),

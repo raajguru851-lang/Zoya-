@@ -1,6 +1,8 @@
 package com.example.assistant_app
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.provider.Settings
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -14,6 +16,14 @@ class MainActivity : FlutterActivity() {
                 val svc = ZoyaAccessibilityService.instance
                 when (call.method) {
                     "isEnabled" -> result.success(svc != null)
+                    "hasMic" -> result.success(
+                        checkSelfPermission(Manifest.permission.RECORD_AUDIO) ==
+                            PackageManager.PERMISSION_GRANTED
+                    )
+                    "refreshBorder" -> {
+                        svc?.refreshBorder()
+                        result.success(svc != null)
+                    }
                     "openSettings" -> {
                         startActivity(
                             Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)

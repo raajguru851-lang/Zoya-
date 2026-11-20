@@ -29,6 +29,11 @@ class LiveService {
   bool _active = false;
   bool _setupDone = false;
   bool _playerStarted = false;
+  bool _flushing = false;
+  bool _dropAudio = false;
+
+  /// true: Zoya bol rahi ho tab bhi tum beech me tok sakte ho (earphones best).
+  bool bargeIn = true;
   DateTime _speakUntil = DateTime.fromMillisecondsSinceEpoch(0);
 
   void Function(LiveState state)? onState;
@@ -55,7 +60,8 @@ class LiveService {
     final prompt = '${AssistantService.basePrompt}\n\n'
         'Abhi ka mode: ${mode.name}. ${mode.prompt}\n\n'
         'Tum awaaz me baat kar rahi ho, isliye chhote, natural, bolchaal '
-        'wale jawab do.\n\n${PhoneTools.prompt}';
+        'wale jawab do. Agar user "ruk jao", "stop" ya "chup" bole to turant '
+        'ruk jao aur sirf "theek hai" kaho.\n\n${PhoneTools.prompt}';
 
     try {
       await FlutterPcmSound.setup(sampleRate: 24000, channelCount: 1);
@@ -141,6 +147,16 @@ class LiveService {
       final sc = data['serverContent'];
       if (sc is! Map) return;
 
+      // User ne beech me tok diya: Zoya turant chup.
+      if (sc['interrupted'] == true) {
+        _dropAudio = false;
+        _listenTimer?.cancel();
+        await _flushPlayer();
+        onTurnComplete?.call();
+        onState?.call(LiveState.listening);
+        return;
+      }
+
       final turn = sc['modelTurn'];
       if (turn is Map && turn['parts'] is List) {
         for (final part in turn['parts']) {
@@ -153,6 +169,7 @@ class LiveService {
 
       final it = sc['inputTranscription'];
       if (it is Map && it['text'] is String) {
+        _dropAudio = false;
         onTranscript?.call(it['text'] as String, true);
       }
       final ot = sc['outputTranscription'];
@@ -161,6 +178,7 @@ class LiveService {
       }
 
       if (sc['turnComplete'] == true) {
+        _dropAudio = false;
         onTurnComplete?.call();
         _scheduleListening();
       }
@@ -179,9 +197,11 @@ class LiveService {
     ));
     _micSub = stream.listen((Uint8List chunk) {
       if (!_setupDone || !_active) return;
-      // Zoya bol rahi ho to mic band rakho (apni awaaz na sune).
-      final until = _speakUntil.add(const Duration(milliseconds: 300));
-      if (DateTime.now().isBefore(until)) return;
+      if (!bargeIn) {
+        // Zoya bol rahi ho to mic band rakho (apni awaaz na sune).
+        final until = _speakUntil.add(const Duration(milliseconds: 300));
+        if (DateTime.now().isBefore(until)) return;
+      }
       _channel?.sink.add(jsonEncode({
         'realtimeInput': {
           'audio': {
@@ -196,7 +216,7 @@ class LiveService {
 
   Future<void> _playChunk(Uint8List bytes) async {
     final len = bytes.length - (bytes.length % 2);
-    if (len <= 0) return;
+    if (len <= 0 || _flushing || _dropAudio) return;
 
     // Is chunk ki awaaz kitni der chalegi (24000 samples/sec * 2 bytes).
     final now = DateTime.now();
@@ -211,6 +231,26 @@ class LiveService {
       _playerStarted = true;
       FlutterPcmSound.start();
     }
+  }
+
+  /// Bajti hui awaaz turant band karo.
+  Future<void> _flushPlayer() async {
+    _flushing = true;
+    try {
+      await FlutterPcmSound.release();
+      await FlutterPcmSound.setup(sampleRate: 24000, channelCount: 1);
+    } catch (_) {}
+    _playerStarted = false;
+    _speakUntil = DateTime.fromMillisecondsSinceEpoch(0);
+    _flushing = false;
+  }
+
+  /// "Chup karo" button: Zoya ki awaaz abhi band.
+  Future<void> silence() async {
+    _dropAudio = true;
+    _listenTimer?.cancel();
+    await _flushPlayer();
+    onState?.call(LiveState.listening);
   }
 
   void _scheduleListening() {
