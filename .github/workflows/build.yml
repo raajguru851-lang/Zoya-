@@ -31,6 +31,8 @@ jobs:
           # Mic permission + minSdk 24 (record package ke liye)
           sed -i 's#<application#<uses-permission android:name="android.permission.RECORD_AUDIO"/>\n    <application#' android/app/src/main/AndroidManifest.xml
           sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 24/; s/minSdkVersion flutter.minSdkVersion/minSdkVersion 24/' android/app/build.gradle.kts android/app/build.gradle 2>/dev/null || true
+          # compileSdk 36: naye packages (record waghera) ko naya Android API chahiye
+          sed -i 's/compileSdk\(Version\)\?[ =]*flutter\.compileSdkVersion/compileSdk = 36/' android/app/build.gradle.kts android/app/build.gradle 2>/dev/null || true
           # Zoya ka native (Kotlin) code: phone control
           cp native/kotlin/*.kt android/app/src/main/kotlin/com/example/assistant_app/
           mkdir -p android/app/src/main/res/xml
@@ -41,7 +43,19 @@ jobs:
           sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' android/app/src/main/AndroidManifest.xml
 
       - run: flutter pub get
-      - run: flutter build apk --release
+      - name: APK banao
+        run: |
+          set -o pipefail
+          flutter build apk --release 2>&1 | tee build.log
+
+      # Fail hone par asli error ko Annotations me dikhata hai
+      - name: Asli error dikhao
+        if: failure()
+        run: |
+          { grep -E "Dependency '|requires libraries|compile against" build.log; grep -E "\.dart:[0-9]+:[0-9]+: Error" build.log; grep -E "^e: " build.log; grep -A8 "What went wrong" build.log; grep -E "error:" build.log; } | head -30 > errs.txt || true
+          if [ ! -s errs.txt ]; then tail -30 build.log > errs.txt; fi
+          msg=$(sed 's/%/%25/g' errs.txt | awk '{printf "%s%%0A", $0}')
+          echo "::error title=Asli error::$msg"
 
       - uses: actions/upload-artifact@v4
         with:
