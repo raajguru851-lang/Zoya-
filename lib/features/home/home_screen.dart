@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants.dart';
 import '../../core/routes.dart';
+import '../../widgets/neon.dart';
 
 /// Naya feature = features list me ek line.
 class HomeScreen extends StatelessWidget {
@@ -18,18 +19,29 @@ class HomeScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text(AppConstants.appName)),
+      appBar: AppBar(
+        title: ShaderMask(
+          shaderCallback: (r) => const LinearGradient(
+            colors: [NeonColors.cyan, NeonColors.magenta],
+          ).createShader(r),
+          child: const Text(
+            AppConstants.appName,
+            style: TextStyle(
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
         children: [
           for (final f in features)
-            Card(
-              child: ListTile(
-                leading: Icon(f.icon),
-                title: Text(f.title),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.pushNamed(context, f.route),
-              ),
+            NeonTile(
+              icon: f.icon,
+              title: f.title,
+              onTap: () => Navigator.pushNamed(context, f.route),
             ),
         ],
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/live_service.dart';
 import '../../services/settings_service.dart';
+import '../../widgets/zoya_orb.dart';
 import '../modes/modes.dart';
 
 class _Line {
@@ -109,6 +110,10 @@ class _VoiceScreenState extends State<VoiceScreen> {
       appBar: AppBar(title: Text('${_mode.emoji} Voice • ${LiveService.voiceName}')),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: ZoyaOrb(state: _state),
+          ),
           Padding(
             padding: const EdgeInsets.all(16),
             child: Text(_statusText,
