@@ -24,6 +24,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     _loadMode();
+    ModeEvents.tick.addListener(_loadMode);
   }
 
   Future<void> _loadMode() async {
@@ -65,6 +66,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
+    ModeEvents.tick.removeListener(_loadMode);
     _controller.dispose();
     _scroll.dispose();
     super.dispose();

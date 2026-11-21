@@ -34,6 +34,7 @@ class _VoiceScreenState extends State<VoiceScreen> {
   @override
   void initState() {
     super.initState();
+    ModeEvents.tick.addListener(_reloadMode);
     SettingsService().getOrb().then((v) {
       if (mounted) setState(() => _orbIndex = v);
     });
@@ -78,8 +79,14 @@ class _VoiceScreenState extends State<VoiceScreen> {
     };
   }
 
+  Future<void> _reloadMode() async {
+    final id = await SettingsService().getMode();
+    if (mounted) setState(() => _mode = Modes.byId(id));
+  }
+
   @override
   void dispose() {
+    ModeEvents.tick.removeListener(_reloadMode);
     _live.onState = null;
     _live.onTranscript = null;
     _live.onTurnComplete = null;

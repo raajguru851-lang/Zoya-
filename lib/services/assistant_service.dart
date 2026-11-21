@@ -23,16 +23,30 @@ class AssistantService {
 
   final _settings = SettingsService();
 
+  Future<String> _systemPrompt() async {
+    final mode = Modes.byId(await _settings.getMode());
+    return '$basePrompt\n\n'
+        'Abhi ka mode: ${mode.name}. ${mode.prompt}\n\n'
+        '${PhoneTools.prompt}';
+  }
+
   Future<String> reply(List<ChatMessage> history) async {
+    // Manager: "gf mode lagao" jaisa hukm turant, bina AI ke, chalta hai.
+    if (history.isNotEmpty && history.last.isUser) {
+      final cmd = Modes.parseCommand(history.last.text);
+      if (cmd != null) {
+        await _settings.setMode(cmd.id);
+        ModeEvents.tick.value++;
+        final short = cmd.name.replaceAll(' Mode', '');
+        return '${cmd.name} active kar diya hai. Ab sirf $short bolegi.';
+      }
+    }
+
     final key = await _settings.getApiKey();
     if (key == null || key.isEmpty) {
       return 'Pehle Settings me Gemini API key daalo.';
     }
 
-    final mode = Modes.byId(await _settings.getMode());
-    final systemPrompt = '$basePrompt\n\n'
-        'Abhi ka mode: ${mode.name}. ${mode.prompt}\n\n'
-        '${PhoneTools.prompt}';
 
     final uri = Uri.parse(
       'https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent',
@@ -61,7 +75,7 @@ class AssistantService {
               body: jsonEncode({
                 'system_instruction': {
                   'parts': [
-                    {'text': systemPrompt}
+                    {'text': await _systemPrompt()}
                   ]
                 },
                 'tools': [

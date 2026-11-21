@@ -20,6 +20,13 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _load();
+    ModeEvents.tick.addListener(_load);
+  }
+
+  @override
+  void dispose() {
+    ModeEvents.tick.removeListener(_load);
+    super.dispose();
   }
 
   Future<void> _load() async {

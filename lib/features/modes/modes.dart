@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 /// Zoya ke saare modes yahan hain.
 /// Naya mode add karna ho to list me ek AssistantMode jod do.
 class AssistantMode {
@@ -14,6 +16,11 @@ class AssistantMode {
     required this.description,
     required this.prompt,
   });
+}
+
+/// Mode badalne par screens ko khabar dene ke liye.
+class ModeEvents {
+  static final ValueNotifier<int> tick = ValueNotifier<int>(0);
 }
 
 class Modes {
@@ -73,4 +80,37 @@ class Modes {
 
   static AssistantMode byId(String? id) =>
       all.firstWhere((m) => m.id == id, orElse: () => all.first);
+
+  /// "gf", "best friend", "teacher" jaise shabdon se mode dhoondho.
+  static AssistantMode? resolve(String q) {
+    final t = q.toLowerCase().replaceAll(RegExp(r'[_\-]'), ' ');
+    bool has(List<String> k) => k.any(t.contains);
+    String? id;
+    if (has(['best friend', 'bestfriend', 'dost', 'bff'])) {
+      id = 'bestfriend';
+    } else if (has(['gf', 'girlfriend', 'girl friend'])) {
+      id = 'gf';
+    } else if (has(['professional', 'formal', 'office'])) {
+      id = 'professional';
+    } else if (has(['funny', 'mazak', 'mazaak', 'comedy', 'joke'])) {
+      id = 'funny';
+    } else if (has(['motivat', 'josh'])) {
+      id = 'motivator';
+    } else if (has(['teacher', 'padhai', 'study', 'tutor'])) {
+      id = 'teacher';
+    }
+    if (id == null) return null;
+    return all.firstWhere((m) => m.id == id);
+  }
+
+  /// "gf mode lagao" jaisa seedha hukm ho to uska mode, warna null.
+  static AssistantMode? parseCommand(String text) {
+    final t = text.toLowerCase();
+    if (!t.contains('mode')) return null;
+    if (t.contains('?') || t.contains('kya ') || t.contains('kaun')) return null;
+    final verb = RegExp(
+        r'\b(lagao|laga|on|active|chalu|kro|karo|kar do|kardo|set|switch|badlo|change|shuru|start)\b');
+    if (!verb.hasMatch(t)) return null;
+    return resolve(t);
+  }
 }
