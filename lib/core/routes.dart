@@ -6,6 +6,7 @@ import '../features/home/home_screen.dart';
 import '../features/chat/chat_screen.dart';
 import '../features/memory/memory_screen.dart';
 import '../features/modes/modes_screen.dart';
+import '../features/permissions/permissions_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/voice/voice_screen.dart';
 import '../features/wake/wake_screen.dart';
@@ -21,6 +22,7 @@ class AppRoutes {
   static const wake = '/wake';
   static const memory = '/memory';
   static const modes = '/modes';
+  static const permissions = '/permissions';
   static const settings = '/settings';
 
   static final Map<String, WidgetBuilder> routes = {
@@ -33,6 +35,7 @@ class AppRoutes {
     wake: (_) => const WakeScreen(),
     memory: (_) => const MemoryScreen(),
     modes: (_) => const ModesScreen(),
+    permissions: (_) => const PermissionsScreen(),
     settings: (_) => const SettingsScreen(),
   };
 }

@@ -88,4 +88,21 @@ class PhoneControl {
       // ignore
     }
   }
+
+  Future<bool> _ask(String method) async {
+    try {
+      return (await _ch.invokeMethod<bool>(method)) ?? false;
+    } on PlatformException {
+      return false;
+    }
+  }
+
+  Future<bool> hasCamera() => _ask('hasCamera');
+  Future<bool> hasNotif() => _ask('hasNotif');
+  Future<bool> hasBattery() => _ask('hasBattery');
+  Future<bool> openBattery() => _ask('openBattery');
+  Future<bool> openAppSettings() => _ask('openAppSettings');
+
+  /// Mic, camera aur notification ki permission ek saath maango.
+  Future<bool> requestAll() => _ask('requestAll');
 }

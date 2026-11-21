@@ -1,6 +1,9 @@
 package com.example.assistant_app
 
 import android.Manifest
+import android.app.NotificationManager
+import android.net.Uri
+import android.os.PowerManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -60,6 +63,45 @@ class MainActivity : FlutterActivity() {
                                 arrayOf(Manifest.permission.POST_NOTIFICATIONS), 101
                             )
                         }
+                        result.success(true)
+                    }
+                    "hasCamera" -> result.success(
+                        checkSelfPermission(Manifest.permission.CAMERA) ==
+                            PackageManager.PERMISSION_GRANTED
+                    )
+                    "hasNotif" -> {
+                        val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                        result.success(nm.areNotificationsEnabled())
+                    }
+                    "hasBattery" -> {
+                        val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+                        result.success(pm.isIgnoringBatteryOptimizations(packageName))
+                    }
+                    "openBattery" -> {
+                        startActivity(
+                            Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        )
+                        result.success(true)
+                    }
+                    "openAppSettings" -> {
+                        startActivity(
+                            Intent(
+                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                Uri.parse("package:$packageName")
+                            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        )
+                        result.success(true)
+                    }
+                    "requestAll" -> {
+                        val list = mutableListOf(
+                            Manifest.permission.RECORD_AUDIO,
+                            Manifest.permission.CAMERA
+                        )
+                        if (Build.VERSION.SDK_INT >= 33) {
+                            list.add(Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                        requestPermissions(list.toTypedArray(), 103)
                         result.success(true)
                     }
                     "refreshBorder" -> {

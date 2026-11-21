@@ -137,7 +137,8 @@ class _HomeScreenState extends State<HomeScreen> {
             _tile(Icons.hearing, 'Wake Word',
                 sub: 'Hey Zoya', route: AppRoutes.wake),
             _tile(Icons.terminal, 'Termux agent', soon: true),
-            _tile(Icons.security, 'App permissions', soon: true),
+            _tile(Icons.security, 'App permissions',
+                route: AppRoutes.permissions),
           ]),
           _label('PERSONAL'),
           neonRows([
