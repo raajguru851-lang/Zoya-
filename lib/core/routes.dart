@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../features/camera/camera_screen.dart';
 import '../features/character/character_screen.dart';
 import '../features/control/control_screen.dart';
 import '../features/home/home_screen.dart';
@@ -12,6 +13,7 @@ import '../features/wake/wake_screen.dart';
 class AppRoutes {
   static const home = '/';
   static const chat = '/chat';
+  static const camera = '/camera';
   static const character = '/character';
   static const control = '/control';
   static const voice = '/voice';
@@ -22,6 +24,7 @@ class AppRoutes {
   static final Map<String, WidgetBuilder> routes = {
     home: (_) => const HomeScreen(),
     chat: (_) => const ChatScreen(),
+    camera: (_) => const CameraScreen(),
     character: (_) => const CharacterScreen(),
     control: (_) => const ControlScreen(),
     voice: (_) => const VoiceScreen(),

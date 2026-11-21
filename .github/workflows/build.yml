@@ -39,6 +39,8 @@ jobs:
           cp native/res/xml/*.xml android/app/src/main/res/xml/
           cp native/res/values/*.xml android/app/src/main/res/values/
           python3 native/patch_manifest.py
+          # Zoya ka app icon (logo)
+          cp -r native/icons/* android/app/src/main/res/
           # Internet permission (release build me zaroori)
           sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' android/app/src/main/AndroidManifest.xml
 

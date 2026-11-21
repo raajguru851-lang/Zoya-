@@ -117,6 +117,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 sub: _modeName.isEmpty ? null : _modeName,
                 route: AppRoutes.modes),
             _tile(Icons.person_outline, 'Character', route: AppRoutes.character),
+            _tile(Icons.photo_camera_outlined, 'Camera vision',
+                route: AppRoutes.camera),
             _tile(Icons.settings_outlined, 'Gemini settings',
                 route: AppRoutes.settings),
           ]),
