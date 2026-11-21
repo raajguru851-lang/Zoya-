@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../features/modes/modes.dart';
+import 'memory_service.dart';
 import 'phone_tools.dart';
 import 'settings_service.dart';
 
@@ -25,9 +26,11 @@ class AssistantService {
 
   Future<String> _systemPrompt() async {
     final mode = Modes.byId(await _settings.getMode());
+    final mem = await MemoryService().promptBlock();
     return '$basePrompt\n\n'
         'Abhi ka mode: ${mode.name}. ${mode.prompt}\n\n'
-        '${PhoneTools.prompt}';
+        '${PhoneTools.prompt}'
+        '${mem.isEmpty ? '' : '\n\n$mem'}';
   }
 
   Future<String> reply(List<ChatMessage> history) async {

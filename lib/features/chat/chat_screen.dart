@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/routes.dart';
 import '../../services/assistant_service.dart';
+import '../../services/memory_service.dart';
 import '../../services/settings_service.dart';
 import '../modes/modes.dart';
 
@@ -25,6 +26,31 @@ class _ChatScreenState extends State<ChatScreen> {
     super.initState();
     _loadMode();
     ModeEvents.tick.addListener(_loadMode);
+    _loadHistory();
+  }
+
+  /// Pichhli baat-cheet wapas dikhao.
+  Future<void> _loadHistory() async {
+    final mem = MemoryService();
+    if (!await mem.isOn()) return;
+    final lines = await mem.getRecent();
+    if (!mounted || _messages.isNotEmpty) return;
+    setState(() {
+      _messages.addAll(lines.map((l) => ChatMessage(l.text, l.isUser)));
+    });
+    _scrollDown();
+  }
+
+  Future<void> _remember(String user, String reply) async {
+    final bad = reply.startsWith('Error:') ||
+        reply.startsWith('Internet ya connection') ||
+        reply.startsWith('Pehle ') ||
+        reply.startsWith('Jawab nahi');
+    if (bad) return;
+    final mem = MemoryService();
+    if (!await mem.isOn()) return;
+    await mem.appendRecent(user, true);
+    await mem.appendRecent(reply, false);
   }
 
   Future<void> _loadMode() async {
@@ -62,6 +88,7 @@ class _ChatScreenState extends State<ChatScreen> {
       _loading = false;
     });
     _scrollDown();
+    _remember(text, reply);
   }
 
   @override
@@ -90,7 +117,10 @@ class _ChatScreenState extends State<ChatScreen> {
           IconButton(
             tooltip: 'Chat saaf karo',
             icon: const Icon(Icons.delete_outline),
-            onPressed: () => setState(() => _messages.clear()),
+            onPressed: () {
+              setState(() => _messages.clear());
+              MemoryService().clearRecent();
+            },
           ),
         ],
       ),

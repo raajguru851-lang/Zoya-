@@ -6,6 +6,7 @@ import 'package:record/record.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../features/modes/modes.dart';
 import 'assistant_service.dart';
+import 'memory_service.dart';
 import 'phone_tools.dart';
 import 'settings_service.dart';
 
@@ -36,6 +37,9 @@ class LiveService {
   /// me ON rakho, speaker me Zoya khud ki awaaz sun leti hai.
   bool bargeIn = false;
   bool _sleepPending = false;
+  final _mem = MemoryService();
+  String _uBuf = '';
+  String _zBuf = '';
 
   /// Zoya ne 'sleep_now' bola: baat khatam, ab so jao.
   void Function()? onSleep;
@@ -68,13 +72,15 @@ class LiveService {
     }
 
     final mode = Modes.byId(await _settings.getMode());
+    final memBlock = await _mem.promptBlock(recentLines: 10);
     final prompt = '${AssistantService.basePrompt}\n\n'
         'Abhi ka mode: ${mode.name}. ${mode.prompt}\n\n'
         'Tum awaaz me baat kar rahi ho, isliye chhote, natural, bolchaal '
         'wale jawab do. Agar user "ruk jao", "stop" ya "chup" bole to turant '
         'ruk jao aur sirf "theek hai" kaho. Jab user baat khatam kare '
         '("bye", "so ja", "bas") to sleep_now tool call karo aur chhota '
-        'alvida bolo.\n\n${PhoneTools.prompt}';
+        'alvida bolo.\n\n${PhoneTools.prompt}'
+        '${memBlock.isEmpty ? '' : '\n\n$memBlock'}';
 
     try {
       await FlutterPcmSound.setup(sampleRate: 24000, channelCount: 1);
@@ -173,6 +179,7 @@ class LiveService {
         _dropAudio = false;
         _listenTimer?.cancel();
         await _flushPlayer();
+        _saveTurn();
         onTurnComplete?.call();
         onState?.call(LiveState.listening);
         return;
@@ -191,15 +198,18 @@ class LiveService {
       final it = sc['inputTranscription'];
       if (it is Map && it['text'] is String) {
         _dropAudio = false;
+        _uBuf += it['text'] as String;
         onTranscript?.call(it['text'] as String, true);
       }
       final ot = sc['outputTranscription'];
       if (ot is Map && ot['text'] is String) {
+        _zBuf += ot['text'] as String;
         onTranscript?.call(ot['text'] as String, false);
       }
 
       if (sc['turnComplete'] == true) {
         _dropAudio = false;
+        _saveTurn();
         onTurnComplete?.call();
         _scheduleListening();
         if (_sleepPending) {
@@ -259,6 +269,20 @@ class LiveService {
       _playerStarted = true;
       FlutterPcmSound.start();
     }
+  }
+
+  /// Is turn ki baat yaaddaasht me daalo.
+  void _saveTurn() {
+    final u = _uBuf.trim();
+    final z = _zBuf.trim();
+    _uBuf = '';
+    _zBuf = '';
+    if (u.isEmpty && z.isEmpty) return;
+    () async {
+      if (!await _mem.isOn()) return;
+      if (u.isNotEmpty) await _mem.appendRecent(u, true);
+      if (z.isNotEmpty) await _mem.appendRecent(z, false);
+    }();
   }
 
   /// Bajti hui awaaz turant band karo.

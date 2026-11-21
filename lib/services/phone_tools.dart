@@ -1,4 +1,5 @@
 import '../features/modes/modes.dart';
+import 'memory_service.dart';
 import 'phone_control.dart';
 import 'settings_service.dart';
 
@@ -21,7 +22,13 @@ class PhoneTools {
       'andaaz me bolo: "<mode> active kar diya hai. Ab sirf <mode> bolegi." '
       'Phir naye mode ke andaaz me baat karo aur purane mode ka andaaz poori '
       'tarah chhod do. Tool ke jawab me naye mode ke jo niyam aayein, unhi se '
-      'baat karo. Koi poochhe ki abhi kaunsa mode hai to get_mode call karo.';
+      'baat karo. Koi poochhe ki abhi kaunsa mode hai to get_mode call karo.\n\n'
+      'Yaaddaasht: jab user apne bare me koi zaroori, der tak kaam aane wali '
+      'baat bataye (naam, pasand, birthday, kaam, rishte, aadat) ya "yaad '
+      'rakhna" kahe, to remember tool se ek chhote vakya me save karo. '
+      '"Bhool jao" kahe to forget call karo. Password, card number, OTP '
+      'jaisi sensitive cheezein kabhi yaad mat rakho. Jo yaad hai uska '
+      'istemal natural tareeke se karo, har baar mat dohrao.';
 
   static const declarations = <Map<String, dynamic>>[
     {
@@ -50,6 +57,34 @@ class PhoneTools {
       },
     },
     {'name': 'get_mode', 'description': 'Abhi kaunsa mode chal raha hai.'},
+    {
+      'name': 'remember',
+      'description': 'User ke bare me ek zaroori baat yaad rakho.',
+      'parameters': {
+        'type': 'object',
+        'properties': {
+          'fact': {
+            'type': 'string',
+            'description': 'Ek chhota vakya, jaise "User ka naam Rahul hai".',
+          },
+        },
+        'required': ['fact'],
+      },
+    },
+    {
+      'name': 'forget',
+      'description': 'Koi yaad bhool jao.',
+      'parameters': {
+        'type': 'object',
+        'properties': {
+          'about': {
+            'type': 'string',
+            'description': 'Us yaad ka koi ek shabd.',
+          },
+        },
+        'required': ['about'],
+      },
+    },
     {
       'name': 'open_app',
       'description': 'Phone me koi app kholo (jaise WhatsApp, YouTube).',
@@ -93,6 +128,14 @@ class PhoneTools {
   /// Action chalao aur AI ko chhota sa natija batao.
   static Future<String> run(String name, Map<String, dynamic> args) async {
     if (name == 'set_mode') return _setMode('${args['mode'] ?? ''}');
+    if (name == 'remember') {
+      final ok = await MemoryService().addFact('${args['fact'] ?? ''}');
+      return ok ? 'yaad kar liya' : 'ye pehle se yaad hai';
+    }
+    if (name == 'forget') {
+      final n = await MemoryService().forgetMatching('${args['about'] ?? ''}');
+      return n > 0 ? '$n yaad bhool gayi' : 'aisa kuch yaad nahi tha';
+    }
     if (name == 'get_mode') {
       final m = Modes.byId(await _settings.getMode());
       return 'Abhi ${m.name} chal raha hai.';

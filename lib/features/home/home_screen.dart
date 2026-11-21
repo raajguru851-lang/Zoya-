@@ -141,7 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ]),
           _label('PERSONAL'),
           neonRows([
-            _tile(Icons.psychology_outlined, 'Memory', soon: true),
+            _tile(Icons.psychology_outlined, 'Memory', route: AppRoutes.memory),
             _tile(Icons.info_outline, 'About', onTap: _about),
           ]),
         ],

@@ -4,6 +4,7 @@ import '../features/character/character_screen.dart';
 import '../features/control/control_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/chat/chat_screen.dart';
+import '../features/memory/memory_screen.dart';
 import '../features/modes/modes_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/voice/voice_screen.dart';
@@ -18,6 +19,7 @@ class AppRoutes {
   static const control = '/control';
   static const voice = '/voice';
   static const wake = '/wake';
+  static const memory = '/memory';
   static const modes = '/modes';
   static const settings = '/settings';
 
@@ -29,6 +31,7 @@ class AppRoutes {
     control: (_) => const ControlScreen(),
     voice: (_) => const VoiceScreen(),
     wake: (_) => const WakeScreen(),
+    memory: (_) => const MemoryScreen(),
     modes: (_) => const ModesScreen(),
     settings: (_) => const SettingsScreen(),
   };
