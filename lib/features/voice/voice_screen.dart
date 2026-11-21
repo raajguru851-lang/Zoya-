@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/live_service.dart';
 import '../../services/phone_control.dart';
 import '../../services/settings_service.dart';
+import '../../widgets/zoya_doll.dart';
 import '../../widgets/zoya_orb.dart';
 import '../modes/modes.dart';
 
@@ -25,6 +26,7 @@ class _VoiceScreenState extends State<VoiceScreen> {
   String? _error;
   bool _barge = false;
   int _orbIndex = 0;
+  int _doll = 0;
   String _userBuf = '';
   String _zoyaBuf = '';
   final List<_Line> _lines = [];
@@ -34,6 +36,9 @@ class _VoiceScreenState extends State<VoiceScreen> {
     super.initState();
     SettingsService().getOrb().then((v) {
       if (mounted) setState(() => _orbIndex = v);
+    });
+    SettingsService().getDoll().then((v) {
+      if (mounted) setState(() => _doll = v);
     });
     _live.onSleep = () {
       _live.stop();
@@ -140,7 +145,13 @@ class _VoiceScreenState extends State<VoiceScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 12),
-            child: ZoyaOrb(state: _state, design: OrbDesigns.at(_orbIndex)),
+            child: _doll >= 0
+                ? ZoyaDoll(
+                    state: _state,
+                    design: Dolls.at(_doll),
+                    height: 200,
+                  )
+                : ZoyaOrb(state: _state, design: OrbDesigns.at(_orbIndex)),
           ),
           Padding(
             padding: const EdgeInsets.all(16),

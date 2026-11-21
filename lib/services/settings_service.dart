@@ -79,4 +79,15 @@ class SettingsService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('auto_stop', sec);
   }
+
+  /// Chuni hui doll ka number. -1 ka matlab sirf gola.
+  Future<int> getDoll() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('doll_index') ?? 0;
+  }
+
+  Future<void> setDoll(int i) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('doll_index', i);
+  }
 }
