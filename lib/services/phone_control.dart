@@ -105,4 +105,34 @@ class PhoneControl {
 
   /// Mic, camera aur notification ki permission ek saath maango.
   Future<bool> requestAll() => _ask('requestAll');
+
+  // ---------- Wake word ("Hey Zoya") ----------
+  /// Native se aane wale 'onWake' (wake word suna gaya) ko sunne ke liye.
+  void setWakeHandler(Future<void> Function() onWake) {
+    _ch.setMethodCallHandler((call) async {
+      if (call.method == 'onWake') await onWake();
+      return null;
+    });
+  }
+
+  Future<bool> wakeStart(List<String> phrases) async {
+    try {
+      return (await _ch.invokeMethod<bool>('wakeStart', phrases)) ?? false;
+    } on PlatformException {
+      return false;
+    }
+  }
+
+  Future<bool> wakeStop() => _ask('wakeStop');
+  Future<bool> wakePause() => _ask('wakePause');
+  Future<bool> wakeResume() => _ask('wakeResume');
+  Future<bool> wakeConsumePending() => _ask('wakeConsumePending');
+
+  Future<String> wakeStatus() async {
+    try {
+      return (await _ch.invokeMethod<String>('wakeStatus')) ?? 'off';
+    } on PlatformException {
+      return 'off';
+    }
+  }
 }

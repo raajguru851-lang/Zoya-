@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/live_service.dart';
 import '../../services/phone_control.dart';
+import '../../services/wake_service.dart';
 import '../../services/settings_service.dart';
 import '../../widgets/zoya_doll.dart';
 import '../../widgets/zoya_orb.dart';
@@ -34,6 +35,7 @@ class _VoiceScreenState extends State<VoiceScreen> {
   @override
   void initState() {
     super.initState();
+    WakeService.instance.pause(); // mic is screen ko do
     ModeEvents.tick.addListener(_reloadMode);
     SettingsService().getOrb().then((v) {
       if (mounted) setState(() => _orbIndex = v);
@@ -87,6 +89,7 @@ class _VoiceScreenState extends State<VoiceScreen> {
   @override
   void dispose() {
     ModeEvents.tick.removeListener(_reloadMode);
+    WakeService.instance.resume();
     _live.onState = null;
     _live.onTranscript = null;
     _live.onTurnComplete = null;

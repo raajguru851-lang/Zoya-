@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 import 'core/constants.dart';
 import 'core/theme.dart';
 import 'core/routes.dart';
+import 'services/wake_service.dart';
 
-void main() => runApp(const AssistantApp());
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  WakeService.instance.init();
+  runApp(const AssistantApp());
+}
 
 class AssistantApp extends StatelessWidget {
   const AssistantApp({super.key});

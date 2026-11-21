@@ -18,8 +18,8 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "zoya/control")
-            .setMethodCallHandler { call, result ->
+        val channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "zoya/control")
+        channel.setMethodCallHandler { call, result ->
                 val svc = ZoyaAccessibilityService.instance
                 when (call.method) {
                     "isEnabled" -> result.success(svc != null)
@@ -104,6 +104,38 @@ class MainActivity : FlutterActivity() {
                         requestPermissions(list.toTypedArray(), 103)
                         result.success(true)
                     }
+                    "wakeStart" -> {
+                        try {
+                            val phrases = (call.arguments as? List<*>)
+                                ?.map { it.toString() } ?: emptyList()
+                            val i = Intent(this, ZoyaForegroundService::class.java)
+                                .putExtra("phrases", phrases.toTypedArray())
+                            if (Build.VERSION.SDK_INT >= 26) startForegroundService(i)
+                            else startService(i)
+                            result.success(true)
+                        } catch (e: Exception) {
+                            result.success(false)
+                        }
+                    }
+                    "wakeStop" -> {
+                        stopService(Intent(this, ZoyaForegroundService::class.java))
+                        ZoyaForegroundService.status = "off"
+                        result.success(true)
+                    }
+                    "wakePause" -> {
+                        ZoyaForegroundService.instance?.pause()
+                        result.success(true)
+                    }
+                    "wakeResume" -> {
+                        ZoyaForegroundService.instance?.resume()
+                        result.success(true)
+                    }
+                    "wakeStatus" -> result.success(ZoyaForegroundService.status)
+                    "wakeConsumePending" -> {
+                        val p = WakeBridge.pending
+                        WakeBridge.pending = false
+                        result.success(p)
+                    }
                     "refreshBorder" -> {
                         svc?.refreshBorder()
                         result.success(svc != null)
@@ -139,5 +171,12 @@ class MainActivity : FlutterActivity() {
                     }
                 }
             }
+
+        WakeBridge.sink = { channel.invokeMethod("onWake", null) }
+    }
+
+    override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+        WakeBridge.sink = null
+        super.cleanUpFlutterEngine(flutterEngine)
     }
 }

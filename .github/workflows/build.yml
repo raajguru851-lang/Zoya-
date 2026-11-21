@@ -44,6 +44,21 @@ jobs:
           # Internet permission (release build me zaroori)
           sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' android/app/src/main/AndroidManifest.xml
 
+      # Offline wake word (Vosk): model download + library
+      - name: Vosk model aur library
+        run: |
+          mkdir -p android/app/src/main/assets/model-en-us
+          wget -q https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip -O /tmp/vosk.zip
+          unzip -q /tmp/vosk.zip -d /tmp/vosk
+          mv /tmp/vosk/*/* android/app/src/main/assets/model-en-us/
+          echo "zoya-vosk-1" > android/app/src/main/assets/model-en-us/uuid
+          cp native/zoya-proguard.pro android/app/zoya-proguard.pro
+          if [ -f android/app/build.gradle.kts ]; then
+            printf '\ndependencies {\n    implementation("com.alphacephei:vosk-android:0.3.75@aar")\n    implementation("net.java.dev.jna:jna:5.18.1@aar")\n}\n' >> android/app/build.gradle.kts
+          else
+            printf "\ndependencies {\n    implementation 'com.alphacephei:vosk-android:0.3.75@aar'\n    implementation 'net.java.dev.jna:jna:5.18.1@aar'\n}\n" >> android/app/build.gradle
+          fi
+
       # Purane plugins (record, pcm_sound) ka compileSdk kam hota hai, usko badhao
       - name: Gradle init script
         run: |
@@ -61,6 +76,15 @@ jobs:
                   if (p.hasProperty('android')) {
                       p.android {
                           compileSdkVersion 36
+                      }
+                  }
+                  if (p.name == 'app' && p.hasProperty('android')) {
+                      try {
+                          p.android.buildTypes.release {
+                              proguardFiles p.file('zoya-proguard.pro')
+                          }
+                      } catch (Exception e) {
+                          println "proguard skip: ${e}"
                       }
                   }
               }

@@ -1,5 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../services/phone_control.dart';
 import '../../services/settings_service.dart';
+import '../../services/wake_service.dart';
 import '../../widgets/neon.dart';
 import '../../widgets/zoya_orb.dart';
 
@@ -12,8 +15,15 @@ class WakeScreen extends StatefulWidget {
 
 class _WakeScreenState extends State<WakeScreen> {
   final _settings = SettingsService();
+  final _pc = PhoneControl();
+  final _phrases = TextEditingController();
+
   int _orb = 0;
   int _stop = 10;
+  bool _on = false;
+  bool _active = false;
+  String _status = 'off';
+  Timer? _poll;
 
   @override
   void initState() {
@@ -24,6 +34,68 @@ class _WakeScreenState extends State<WakeScreen> {
     _settings.getAutoStop().then((v) {
       if (mounted) setState(() => _stop = v);
     });
+    _settings.getWake().then((v) {
+      if (mounted) setState(() => _on = v);
+    });
+    _settings.getActive().then((v) {
+      if (mounted) setState(() => _active = v);
+    });
+    _settings.getWakePhrasesText().then((v) {
+      if (mounted) _phrases.text = v;
+    });
+    _poll = Timer.periodic(const Duration(seconds: 1), (_) async {
+      final s = await _pc.wakeStatus();
+      if (mounted) setState(() => _status = s);
+    });
+  }
+
+  @override
+  void dispose() {
+    _poll?.cancel();
+    _phrases.dispose();
+    super.dispose();
+  }
+
+  void _snack(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  Future<void> _toggle(bool v) async {
+    if (v) {
+      await _pc.requestNotif();
+      final err = await WakeService.instance.start();
+      if (err != null) {
+        _snack(err);
+        return;
+      }
+      await _settings.setWake(true);
+    } else {
+      await WakeService.instance.stop();
+      await _settings.setWake(false);
+    }
+    if (mounted) setState(() => _on = v);
+  }
+
+  Future<void> _savePhrases() async {
+    await _settings.setWakePhrases(_phrases.text);
+    if (_on) {
+      await WakeService.instance.stop();
+      final err = await WakeService.instance.start();
+      if (err != null) _snack(err);
+    }
+    _snack('Save ho gaya');
+  }
+
+  String get _statusText {
+    if (_status == 'loading') {
+      return 'Model load ho raha hai... (pehli baar thoda time lagta hai)';
+    }
+    if (_status == 'listening') return 'Sun rahi hai... bolo: "Hey Zoya"';
+    if (_status == 'awake') return 'Jaag gayi!';
+    if (_status == 'paused') return 'Abhi baat chal rahi hai.';
+    if (_status.startsWith('error')) return 'Dikkat: $_status';
+    return 'Band hai';
   }
 
   Widget _label(String text) => Padding(
@@ -72,13 +144,14 @@ class _WakeScreenState extends State<WakeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final canToggle = _on || _active;
     return Scaffold(
       appBar: AppBar(
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Wake Word'),
-            Text('HEY ZOYA',
+            Text('OFFLINE VOSK · HEY ZOYA',
                 style: TextStyle(
                     fontSize: 12, letterSpacing: 2, color: Colors.white60)),
           ],
@@ -94,24 +167,65 @@ class _WakeScreenState extends State<WakeScreen> {
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: NeonColors.purple.withAlpha(110)),
             ),
-            child: const Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Expanded(
+                    const Expanded(
                       child: Text('Background wake word detection',
                           style: TextStyle(fontWeight: FontWeight.w600)),
                     ),
-                    Switch(value: false, onChanged: null),
+                    Switch(
+                      value: _on,
+                      onChanged: canToggle ? _toggle : null,
+                    ),
                   ],
                 ),
-                Text(
-                  'Offline Vosk engine agle step me judega. Tab tak neeche '
-                  'Auto stop aur Gola design chun sakte ho.',
-                  style: TextStyle(fontSize: 12, color: Colors.white70),
+                Text(_statusText,
+                    style: const TextStyle(
+                        fontSize: 13, color: NeonColors.cyan)),
+                if (!canToggle)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 6),
+                    child: Text(
+                      'Pehle Home par Zoya Active ON karo.',
+                      style: TextStyle(fontSize: 12, color: Colors.white70),
+                    ),
+                  ),
+                const Padding(
+                  padding: EdgeInsets.only(top: 6),
+                  child: Text(
+                    'ON karne par notification dikhegi. Naam sunte hi Zoya '
+                    'jaag jati hai. Naam pehchanne ka kaam phone par hi hota '
+                    'hai, jaagne se pehle awaaz internet par nahi jaati.',
+                    style: TextStyle(fontSize: 12, color: Colors.white70),
+                  ),
                 ),
               ],
+            ),
+          ),
+          _label('WAKE SHABD · comma se alag'),
+          TextField(
+            controller: _phrases,
+            autocorrect: false,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              hintText: 'hey zoya, hey zoe a',
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.save_outlined),
+                onPressed: _savePhrases,
+              ),
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.only(top: 6),
+            child: Text(
+              '"Zoya" naam model ko kabhi alag sunai deta hai. Jaage na, to '
+              'milte-julte shabd jodo (jaise "hey zoe a"), ya "hey sara" jaisa '
+              'saaf naam try karo.',
+              style: TextStyle(fontSize: 12, color: Colors.white60),
             ),
           ),
           _label('AUTO STOP · koi na bole to'),

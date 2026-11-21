@@ -90,4 +90,29 @@ class SettingsService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('doll_index', i);
   }
+
+  /// Wake word ke shabd (comma se alag). "hey zoya" ke kuch milte-julte
+  /// roop bhi, kyunki "zoya" naam model ko aksar alag sunai deta hai.
+  static const defaultWakePhrases =
+      'hey zoya, hey zoe a, hey joy a, hey soy a';
+
+  Future<String> getWakePhrasesText() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('wake_phrases') ?? defaultWakePhrases;
+  }
+
+  Future<List<String>> getWakePhrases() async {
+    final t = await getWakePhrasesText();
+    final list = t
+        .split(',')
+        .map((e) => e.trim().toLowerCase())
+        .where((e) => e.isNotEmpty)
+        .toList();
+    return list.isEmpty ? ['hey zoya'] : list;
+  }
+
+  Future<void> setWakePhrases(String text) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('wake_phrases', text.trim());
+  }
 }

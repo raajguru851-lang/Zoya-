@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:record/record.dart';
 import '../../services/phone_control.dart';
 import '../../services/settings_service.dart';
+import '../../services/wake_service.dart';
 import '../../widgets/neon.dart';
 
 /// Zoya Active switch. Permissions poori hon aur switch ON ho, tabhi
@@ -45,6 +46,8 @@ class _ActiveCardState extends State<ActiveCard> with WidgetsBindingObserver {
     if (on && !(acc && mic)) {
       on = false;
       await _settings.setActive(false);
+      await _settings.setWake(false);
+      await WakeService.instance.stop();
     }
     if (!mounted) return;
     setState(() {
@@ -58,6 +61,10 @@ class _ActiveCardState extends State<ActiveCard> with WidgetsBindingObserver {
   Future<void> _toggle(bool v) async {
     if (v && !(_acc && _mic)) return;
     await _settings.setActive(v);
+    if (!v) {
+      await _settings.setWake(false);
+      await WakeService.instance.stop();
+    }
     await _pc.refreshBorder();
     if (mounted) setState(() => _on = v);
   }

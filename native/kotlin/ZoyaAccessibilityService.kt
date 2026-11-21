@@ -89,6 +89,19 @@ class ZoyaAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() {}
 
+    /** Wake word par Zoya app ko aage lao (Flutter band ho tab). */
+    fun launchSelf() {
+        try {
+            val i = Intent(this, MainActivity::class.java).addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                    Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+            )
+            startActivity(i)
+        } catch (e: Exception) {
+        }
+    }
+
     fun home(): Boolean = performGlobalAction(GLOBAL_ACTION_HOME)
     fun back(): Boolean = performGlobalAction(GLOBAL_ACTION_BACK)
     fun recents(): Boolean = performGlobalAction(GLOBAL_ACTION_RECENTS)
