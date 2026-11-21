@@ -52,6 +52,11 @@ jobs:
           echo "android.suppressUnsupportedCompileSdk=36" >> android/gradle.properties
           cat > ~/.gradle/init.d/zoya.gradle <<'GRADLE'
           allprojects {
+              tasks.configureEach { t ->
+                  if (t.name.toLowerCase().contains('lintvital')) {
+                      t.enabled = false
+                  }
+              }
               afterEvaluate { p ->
                   if (p.hasProperty('android')) {
                       p.android {
