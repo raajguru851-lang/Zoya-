@@ -82,18 +82,13 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [NeonColors.cyan, NeonColors.purple],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+            ClipOval(
+              child: Image.asset(
+                'assets/sara_logo.png',
+                width: 40,
+                height: 40,
+                fit: BoxFit.cover,
               ),
-              child: const Icon(Icons.auto_awesome, color: Colors.white),
             ),
             const SizedBox(width: 12),
             ShaderMask(
