@@ -125,6 +125,10 @@ class PhoneControl {
     }
   }
 
+  /// Voice session ke dauran Zoya ko background me zinda rakho.
+  Future<bool> keepAliveStart() => _ask('keepAliveStart');
+  Future<bool> keepAliveStop() => _ask('keepAliveStop');
+
   Future<bool> wakeStop() => _ask('wakeStop');
   Future<bool> wakePause() => _ask('wakePause');
   Future<bool> wakeResume() => _ask('wakeResume');

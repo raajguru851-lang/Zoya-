@@ -24,7 +24,7 @@ class _WakeScreenState extends State<WakeScreen> {
   bool _active = false;
   String _status = 'off';
   String _heard = '';
-  bool _free = true;
+  bool _free = false;
   Timer? _poll;
 
   @override
@@ -102,7 +102,7 @@ class _WakeScreenState extends State<WakeScreen> {
     if (_status == 'loading') {
       return 'Model load ho raha hai... (pehli baar thoda time lagta hai)';
     }
-    if (_status == 'listening') return 'Sun rahi hai... bolo: "Hey Zoya"';
+    if (_status == 'listening') return 'Sun rahi hai... bolo: "Wake up Zoya"';
     if (_status == 'awake') return 'Jaag gayi!';
     if (_status == 'paused') return 'Abhi baat chal rahi hai.';
     if (_status.startsWith('error')) return 'Dikkat: $_status';
@@ -162,7 +162,7 @@ class _WakeScreenState extends State<WakeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Wake Word'),
-            Text('OFFLINE VOSK · HEY ZOYA',
+            Text('OFFLINE VOSK · WAKE UP ZOYA',
                 style: TextStyle(
                     fontSize: 12, letterSpacing: 2, color: Colors.white60)),
           ],
@@ -232,7 +232,7 @@ class _WakeScreenState extends State<WakeScreen> {
             decoration: InputDecoration(
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16)),
-              hintText: 'hey zoya, hey zoe a',
+              hintText: 'wake up zoya',
               suffixIcon: IconButton(
                 icon: const Icon(Icons.save_outlined),
                 onPressed: _savePhrases,
@@ -242,9 +242,9 @@ class _WakeScreenState extends State<WakeScreen> {
           const Padding(
             padding: EdgeInsets.only(top: 6),
             child: Text(
-              '"Zoya" naam model ko kabhi alag sunai deta hai. Jaage na, to '
-              'milte-julte shabd jodo (jaise "hey zoe a"), ya "hey sara" jaisa '
-              'saaf naam try karo.',
+              '"Wake up" sunte hi Zoya jaag jati hai, naam chahe kuch bhi sunai '
+              'de (soy, julia, zulia...). Isliye kisi aur ke "wake up" kehne '
+              'par bhi jaag sakti hai.',
               style: TextStyle(fontSize: 12, color: Colors.white60),
             ),
           ),

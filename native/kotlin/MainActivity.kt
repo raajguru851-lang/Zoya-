@@ -120,6 +120,21 @@ class MainActivity : FlutterActivity() {
                             result.success(false)
                         }
                     }
+                    "keepAliveStart" -> {
+                        try {
+                            val i = Intent(this, ZoyaForegroundService::class.java)
+                                .putExtra("keepalive", true)
+                            if (Build.VERSION.SDK_INT >= 26) startForegroundService(i)
+                            else startService(i)
+                            result.success(true)
+                        } catch (e: Exception) {
+                            result.success(false)
+                        }
+                    }
+                    "keepAliveStop" -> {
+                        ZoyaForegroundService.instance?.releaseKeepAlive()
+                        result.success(true)
+                    }
                     "wakeStop" -> {
                         stopService(Intent(this, ZoyaForegroundService::class.java))
                         ZoyaForegroundService.status = "off"

@@ -7,6 +7,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import '../features/modes/modes.dart';
 import 'assistant_service.dart';
 import 'memory_service.dart';
+import 'phone_control.dart';
 import 'phone_tools.dart';
 import 'settings_service.dart';
 
@@ -42,6 +43,7 @@ class LiveService {
   bool enableSleepTool = false;
   bool _sleepPending = false;
   final _mem = MemoryService();
+  final _pc = PhoneControl();
   String _uBuf = '';
   String _zBuf = '';
 
@@ -74,6 +76,9 @@ class LiveService {
     if (!await _recorder.hasPermission()) {
       return _fail('Mic ki permission chahiye. Phone Settings se allow karo.');
     }
+
+    // App se bahar jaane par bhi bolna aur sunna chalta rahe.
+    await _pc.keepAliveStart();
 
     final mode = Modes.byId(await _settings.getMode());
     final memBlock = await _mem.promptBlock(recentLines: 10);
@@ -377,6 +382,9 @@ class LiveService {
     } catch (_) {}
     try {
       await FlutterPcmSound.release();
+    } catch (_) {}
+    try {
+      await _pc.keepAliveStop();
     } catch (_) {}
   }
 }

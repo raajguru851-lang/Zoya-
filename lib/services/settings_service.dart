@@ -91,14 +91,13 @@ class SettingsService {
     await prefs.setInt('doll_index', i);
   }
 
-  /// Wake word ke shabd (comma se alag). "hey zoya" ke kuch milte-julte
-  /// roop bhi, kyunki "zoya" naam model ko aksar alag sunai deta hai.
-  static const defaultWakePhrases =
-      'hey zoya, hello zoya, ok zoya, hi zoya, hey zoe a, hey joy a, hey soy a';
+  /// Wake word ke shabd (comma se alag). "wake up zoya" me "wake up" sunte
+  /// hi Zoya jaag jati hai, kyunki "zoya" naam model ko aksar alag sunai deta hai.
+  static const defaultWakePhrases = 'wake up zoya';
 
   Future<String> getWakePhrasesText() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('wake_phrases') ?? defaultWakePhrases;
+    return prefs.getString('wake_phrases_v2') ?? defaultWakePhrases;
   }
 
   Future<List<String>> getWakePhrases() async {
@@ -115,16 +114,16 @@ class SettingsService {
   /// false: sirf wake shabd sunta hai (halka).
   Future<bool> getWakeFree() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('wake_free') ?? true;
+    return prefs.getBool('wake_free_v2') ?? false;
   }
 
   Future<void> setWakeFree(bool v) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('wake_free', v);
+    await prefs.setBool('wake_free_v2', v);
   }
 
   Future<void> setWakePhrases(String text) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('wake_phrases', text.trim());
+    await prefs.setString('wake_phrases_v2', text.trim());
   }
 }

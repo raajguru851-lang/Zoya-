@@ -37,6 +37,10 @@ class ZoyaForegroundService : Service(), RecognitionListener {
         @Volatile
         var heard: String = ""
 
+        /** Voice session chal raha hai: service zinda rakho (background me mic ke liye). */
+        @Volatile
+        var keepAlive = false
+
         private const val PREFS = "zoya_native"
     }
 
@@ -49,11 +53,35 @@ class ZoyaForegroundService : Service(), RecognitionListener {
     private var phrases: List<String> = listOf("hey zoya")
     private var free = true
 
-    // "Zoya" naam model ko aksar alag sunai deta hai, ye milte-julte roop hain
+    // "Zoya" naam model ko aksar alag sunai deta hai (soy, julia, zulia...)
+    // Grammar me ye sab jode jaate hain, taaki "wake up ___" pakda jaye.
     private val nameVariants = listOf(
-        "zoya", "zoe a", "joya", "joy a", "soya", "soy a",
-        "zoey", "zoia", "zoi a", "noya", "toya", "joey a"
+        "zoya", "zoe a", "joya", "joy a", "soya", "soy a", "zoey", "zoia",
+        "zoi a", "noya", "toya", "joey a", "julia", "zulia", "zuya", "soy",
+        "joy", "zoe", "there"
     )
+
+    // Sab-suno mode me inme se koi naam sunai de to bhi jaag jao
+    private val strictNames = listOf(
+        "zoya", "zoe a", "joya", "joy a", "soya", "soy a", "zoey", "zoia",
+        "zoi a", "noya", "toya", "joey a", "julia", "zulia", "zuya"
+    )
+
+    /** "wake up zoya" jaise 3+ shabd ke wake phrase ka shuruaati hissa ("wake up"). */
+    private fun anchors(): List<String> = phrases.mapNotNull { p ->
+        val w = p.split(" ").filter { it.isNotEmpty() }
+        if (w.size >= 3) w.dropLast(1).joinToString(" ") else null
+    }.distinct()
+
+    private fun grammarList(): List<String> {
+        val g = LinkedHashSet<String>()
+        g.addAll(phrases)
+        for (a in anchors()) {
+            g.add(a)
+            nameVariants.forEach { g.add("$a $it") }
+        }
+        return g.toList()
+    }
     private var triggered = false
     private var wantListening = false
 
@@ -67,6 +95,12 @@ class ZoyaForegroundService : Service(), RecognitionListener {
         if (!startAsForeground()) {
             stopSelf()
             return START_NOT_STICKY
+        }
+
+        // Sirf Voice session ke liye zinda rakhna (wake word sunna nahi)
+        if (intent?.getBooleanExtra("keepalive", false) == true) {
+            keepAlive = true
+            return if (wantListening) START_STICKY else START_NOT_STICKY
         }
 
         val prefs = getSharedPreferences(PREFS, MODE_PRIVATE)
@@ -111,7 +145,7 @@ class ZoyaForegroundService : Service(), RecognitionListener {
                 else Notification.Builder(this)
             val notification = builder
                 .setContentTitle("Zoya active hai")
-                .setContentText("\"Hey Zoya\" bolkar jagao")
+                .setContentText("\"Wake up Zoya\" bolkar jagao")
                 .setSmallIcon(android.R.drawable.ic_btn_speak_now)
                 .setContentIntent(open)
                 .setOngoing(true)
@@ -157,7 +191,7 @@ class ZoyaForegroundService : Service(), RecognitionListener {
     private fun startRecognizer(m: Model) {
         try {
             val grammar = JSONArray().apply {
-                phrases.forEach { put(it) }
+                grammarList().forEach { put(it) }
                 put("[unk]")
             }.toString()
             // free: sab kuch sunta hai (jaanch/aasaan), warna sirf wake shabd (halka)
@@ -187,6 +221,12 @@ class ZoyaForegroundService : Service(), RecognitionListener {
         } catch (e: Exception) {
         }
         speech = null
+    }
+
+    /** Voice session khatam. Wake word na sun rahe ho to service band. */
+    fun releaseKeepAlive() {
+        keepAlive = false
+        if (!wantListening) stopSelf()
     }
 
     /** Dart ne conversation shuru ki: mic chhod do. */
@@ -222,7 +262,9 @@ class ZoyaForegroundService : Service(), RecognitionListener {
 
     private fun matches(t: String): Boolean {
         if (phrases.any { t.contains(it) }) return true
-        return free && nameVariants.any { t.contains(it) }
+        // "wake up" sunte hi jaag jao (naam kuch bhi sunai de)
+        if (anchors().any { t.contains(it) }) return true
+        return free && strictNames.any { t.contains(it) }
     }
 
     private fun trigger() {
