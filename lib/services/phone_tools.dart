@@ -28,7 +28,13 @@ class PhoneTools {
       'rakhna" kahe, to remember tool se ek chhote vakya me save karo. '
       '"Bhool jao" kahe to forget call karo. Password, card number, OTP '
       'jaisi sensitive cheezein kabhi yaad mat rakho. Jo yaad hai uska '
-      'istemal natural tareeke se karo, har baar mat dohrao.';
+      'istemal natural tareeke se karo, har baar mat dohrao.\n\n'
+      'Aur tools: set_alarm (agle 24 ghante ke andar ka alarm/reminder), '
+      'set_timer, flashlight, set_volume, dial_number (sirf dialer kholta '
+      'hai), whatsapp_message (message likhkar WhatsApp kholta hai, bhejna '
+      'user ko hai), web_search, open_link, battery_status, current_time. '
+      'Call ya message ke liye poora number chahiye (country code ke saath); '
+      'number na ho to user se poochho. Bhejne se pehle user se confirm karo.';
 
   static const declarations = <Map<String, dynamic>>[
     {
@@ -57,6 +63,109 @@ class PhoneTools {
       },
     },
     {'name': 'get_mode', 'description': 'Abhi kaunsa mode chal raha hai.'},
+    {
+      'name': 'set_alarm',
+      'description': 'Alarm ya reminder lagao (agle 24 ghante ke andar ka).',
+      'parameters': {
+        'type': 'object',
+        'properties': {
+          'hour': {'type': 'integer', 'description': '24 ghante wala ghanta, 0-23'},
+          'minute': {'type': 'integer', 'description': 'minute, 0-59'},
+          'label': {'type': 'string', 'description': 'Alarm ka naam ya reminder'},
+        },
+        'required': ['hour', 'minute'],
+      },
+    },
+    {
+      'name': 'set_timer',
+      'description': 'Countdown timer lagao.',
+      'parameters': {
+        'type': 'object',
+        'properties': {
+          'seconds': {'type': 'integer', 'description': 'Kitne second ka'},
+          'label': {'type': 'string', 'description': 'Timer ka naam'},
+        },
+        'required': ['seconds'],
+      },
+    },
+    {
+      'name': 'flashlight',
+      'description': 'Flashlight (torch) on ya off karo.',
+      'parameters': {
+        'type': 'object',
+        'properties': {
+          'on': {'type': 'boolean', 'description': 'true = on, false = off'},
+        },
+        'required': ['on'],
+      },
+    },
+    {
+      'name': 'set_volume',
+      'description': 'Media volume badlo.',
+      'parameters': {
+        'type': 'object',
+        'properties': {
+          'action': {
+            'type': 'string',
+            'enum': ['up', 'down', 'mute', 'set'],
+            'description': 'up/down/mute, ya set (percent ke saath)',
+          },
+          'percent': {'type': 'integer', 'description': 'set ke liye 0-100'},
+        },
+        'required': ['action'],
+      },
+    },
+    {
+      'name': 'dial_number',
+      'description': 'Dialer me number likhkar kholo. Call user khud dabayega.',
+      'parameters': {
+        'type': 'object',
+        'properties': {
+          'number': {'type': 'string', 'description': 'Phone number'},
+        },
+        'required': ['number'],
+      },
+    },
+    {
+      'name': 'whatsapp_message',
+      'description':
+          'WhatsApp me message likhkar kholo. Bhejna user khud dabayega.',
+      'parameters': {
+        'type': 'object',
+        'properties': {
+          'phone': {
+            'type': 'string',
+            'description': 'Country code ke saath number, jaise 919876543210',
+          },
+          'text': {'type': 'string', 'description': 'Message ka text'},
+        },
+        'required': ['phone', 'text'],
+      },
+    },
+    {
+      'name': 'web_search',
+      'description': 'Google par kuch search karo.',
+      'parameters': {
+        'type': 'object',
+        'properties': {
+          'query': {'type': 'string', 'description': 'Kya search karna hai'},
+        },
+        'required': ['query'],
+      },
+    },
+    {
+      'name': 'open_link',
+      'description': 'Koi website ya link kholo.',
+      'parameters': {
+        'type': 'object',
+        'properties': {
+          'url': {'type': 'string', 'description': 'Link'},
+        },
+        'required': ['url'],
+      },
+    },
+    {'name': 'battery_status', 'description': 'Battery kitni hai aur charge ho rahi hai ya nahi.'},
+    {'name': 'current_time', 'description': 'Abhi ka samay aur tarikh.'},
     {
       'name': 'remember',
       'description': 'User ke bare me ek zaroori baat yaad rakho.',
@@ -128,6 +237,34 @@ class PhoneTools {
   /// Action chalao aur AI ko chhota sa natija batao.
   static Future<String> run(String name, Map<String, dynamic> args) async {
     if (name == 'set_mode') return _setMode('${args['mode'] ?? ''}');
+    if (name == 'current_time') {
+      final t = DateTime.now();
+      const days = [
+        'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
+        'Sunday'
+      ];
+      const months = [
+        'January', 'February', 'March', 'April', 'May', 'June', 'July',
+        'August', 'September', 'October', 'November', 'December'
+      ];
+      final h12 = t.hour % 12 == 0 ? 12 : t.hour % 12;
+      final ap = t.hour < 12 ? 'AM' : 'PM';
+      final mm = t.minute.toString().padLeft(2, '0');
+      return 'Abhi $h12:$mm $ap hai, ${days[t.weekday - 1]} '
+          '${t.day} ${months[t.month - 1]} ${t.year}.';
+    }
+    const nativeTools = {
+      'set_alarm',
+      'set_timer',
+      'flashlight',
+      'set_volume',
+      'dial_number',
+      'whatsapp_message',
+      'web_search',
+      'open_link',
+      'battery_status',
+    };
+    if (nativeTools.contains(name)) return _pc.tool(name, args);
     if (name == 'remember') {
       final ok = await MemoryService().addFact('${args['fact'] ?? ''}');
       return ok ? 'yaad kar liya' : 'ye pehle se yaad hai';

@@ -1,6 +1,11 @@
 package com.example.assistant_app
 
 import android.Manifest
+import android.content.IntentFilter
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraManager
+import android.os.BatteryManager
+import android.provider.AlarmClock
 import android.app.NotificationManager
 import android.net.Uri
 import android.os.PowerManager
@@ -155,6 +160,10 @@ class MainActivity : FlutterActivity() {
                         WakeBridge.pending = false
                         result.success(p)
                     }
+                    "phoneTool" -> {
+                        val a = call.arguments as? Map<*, *> ?: emptyMap<Any, Any>()
+                        result.success(runTool(a))
+                    }
                     "refreshBorder" -> {
                         svc?.refreshBorder()
                         result.success(svc != null)
@@ -192,6 +201,121 @@ class MainActivity : FlutterActivity() {
             }
 
         WakeBridge.sink = { channel.invokeMethod("onWake", null) }
+    }
+
+    /** Activity shuru karo. Accessibility chal rahi ho to uske zariye (background me bhi). */
+    private fun launch(i: Intent): Boolean {
+        return try {
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            (ZoyaAccessibilityService.instance ?: this).startActivity(i)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    /** Alarm, timer, torch, volume, call, link, WhatsApp, battery jaise chhote kaam. */
+    private fun runTool(a: Map<*, *>): String {
+        val name = a["name"]?.toString() ?: return "tool ka naam nahi mila"
+        fun s(k: String): String = a[k]?.toString() ?: ""
+        fun n(k: String): Int = (a[k] as? Number)?.toInt() ?: s(k).toIntOrNull() ?: 0
+
+        return try {
+            when (name) {
+                "set_alarm" -> {
+                    val label = s("label").ifEmpty { "Sara" }
+                    val i = Intent(AlarmClock.ACTION_SET_ALARM)
+                        .putExtra(AlarmClock.EXTRA_HOUR, n("hour"))
+                        .putExtra(AlarmClock.EXTRA_MINUTES, n("minute"))
+                        .putExtra(AlarmClock.EXTRA_MESSAGE, label)
+                        .putExtra(AlarmClock.EXTRA_SKIP_UI, true)
+                    if (launch(i)) "alarm laga diya: ${n("hour")}:${"%02d".format(n("minute"))}"
+                    else "alarm nahi laga"
+                }
+                "set_timer" -> {
+                    val i = Intent(AlarmClock.ACTION_SET_TIMER)
+                        .putExtra(AlarmClock.EXTRA_LENGTH, n("seconds"))
+                        .putExtra(AlarmClock.EXTRA_MESSAGE, s("label").ifEmpty { "Sara" })
+                        .putExtra(AlarmClock.EXTRA_SKIP_UI, true)
+                    if (launch(i)) "timer laga diya: ${n("seconds")} second" else "timer nahi laga"
+                }
+                "flashlight" -> {
+                    val cm = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+                    val id = cm.cameraIdList.firstOrNull {
+                        cm.getCameraCharacteristics(it)
+                            .get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
+                    } ?: return "is phone me flashlight nahi hai"
+                    val on = (a["on"] as? Boolean) ?: true
+                    cm.setTorchMode(id, on)
+                    if (on) "flashlight on" else "flashlight off"
+                }
+                "set_volume" -> {
+                    val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                    when (s("action")) {
+                        "up" -> am.adjustStreamVolume(
+                            AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE,
+                            AudioManager.FLAG_SHOW_UI
+                        )
+                        "down" -> am.adjustStreamVolume(
+                            AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER,
+                            AudioManager.FLAG_SHOW_UI
+                        )
+                        "mute" -> am.adjustStreamVolume(
+                            AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE,
+                            AudioManager.FLAG_SHOW_UI
+                        )
+                        "set" -> {
+                            val max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                            val level = max * n("percent").coerceIn(0, 100) / 100
+                            am.setStreamVolume(
+                                AudioManager.STREAM_MUSIC, level, AudioManager.FLAG_SHOW_UI
+                            )
+                        }
+                        else -> return "ye volume action nahi hai"
+                    }
+                    "volume badal diya"
+                }
+                "dial_number" -> {
+                    val num = s("number").filter { it.isDigit() || it == '+' }
+                    if (num.isEmpty()) return "number nahi mila"
+                    if (launch(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$num"))))
+                        "dialer khol diya, call khud dabana hoga"
+                    else "dialer nahi khula"
+                }
+                "web_search" -> {
+                    val url = "https://www.google.com/search?q=" + Uri.encode(s("query"))
+                    if (launch(Intent(Intent.ACTION_VIEW, Uri.parse(url)))) "search khol diya"
+                    else "search nahi khula"
+                }
+                "open_link" -> {
+                    var url = s("url").trim()
+                    if (url.isEmpty()) return "link nahi mila"
+                    if (!url.startsWith("http")) url = "https://$url"
+                    if (launch(Intent(Intent.ACTION_VIEW, Uri.parse(url)))) "link khol diya"
+                    else "link nahi khula"
+                }
+                "whatsapp_message" -> {
+                    val phone = s("phone").filter { it.isDigit() }
+                    val url = "https://wa.me/$phone?text=" + Uri.encode(s("text"))
+                    if (launch(Intent(Intent.ACTION_VIEW, Uri.parse(url))))
+                        "WhatsApp me message likhkar khol diya, bhejna user ko hai"
+                    else "WhatsApp nahi khula"
+                }
+                "battery_status" -> {
+                    val st = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+                    val level = st?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+                    val scale = st?.getIntExtra(BatteryManager.EXTRA_SCALE, 100) ?: 100
+                    val status = st?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
+                    val charging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
+                        status == BatteryManager.BATTERY_STATUS_FULL
+                    val pct = if (level >= 0 && scale > 0) level * 100 / scale else -1
+                    "battery $pct%, " + (if (charging) "charge ho rahi hai" else "charge nahi ho rahi")
+                }
+                else -> "ye tool nahi hai"
+            }
+        } catch (e: Exception) {
+            "nahi ho paya: ${e.message}"
+        }
     }
 
     override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {

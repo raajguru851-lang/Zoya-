@@ -150,4 +150,14 @@ class PhoneControl {
       return 'off';
     }
   }
+
+  /// Alarm, timer, torch, volume, call, link, WhatsApp, battery jaise kaam.
+  Future<String> tool(String name, Map<String, dynamic> args) async {
+    try {
+      return (await _ch.invokeMethod<String>('phoneTool', {'name': name, ...args})) ??
+          'nahi ho paya';
+    } on PlatformException catch (e) {
+      return 'nahi ho paya: ${e.message}';
+    }
+  }
 }
