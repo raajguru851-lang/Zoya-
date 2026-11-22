@@ -23,6 +23,8 @@ class _WakeScreenState extends State<WakeScreen> {
   bool _on = false;
   bool _active = false;
   String _status = 'off';
+  String _heard = '';
+  bool _free = true;
   Timer? _poll;
 
   @override
@@ -43,9 +45,18 @@ class _WakeScreenState extends State<WakeScreen> {
     _settings.getWakePhrasesText().then((v) {
       if (mounted) _phrases.text = v;
     });
+    _settings.getWakeFree().then((v) {
+      if (mounted) setState(() => _free = v);
+    });
     _poll = Timer.periodic(const Duration(seconds: 1), (_) async {
       final s = await _pc.wakeStatus();
-      if (mounted) setState(() => _status = s);
+      final h = await _pc.wakeHeard();
+      if (mounted) {
+        setState(() {
+          _status = s;
+          _heard = h;
+        });
+      }
     });
   }
 
@@ -185,6 +196,15 @@ class _WakeScreenState extends State<WakeScreen> {
                 Text(_statusText,
                     style: const TextStyle(
                         fontSize: 13, color: NeonColors.cyan)),
+                if (_status == 'listening' || _status == 'awake')
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      _heard.isEmpty ? 'Suna: (abhi kuch nahi)' : 'Suna: "$_heard"',
+                      style: const TextStyle(
+                          fontSize: 12, color: Colors.white70),
+                    ),
+                  ),
                 if (!canToggle)
                   const Padding(
                     padding: EdgeInsets.only(top: 6),
@@ -227,6 +247,33 @@ class _WakeScreenState extends State<WakeScreen> {
               'saaf naam try karo.',
               style: TextStyle(fontSize: 12, color: Colors.white60),
             ),
+          ),
+          Row(
+            children: [
+              const Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(top: 10),
+                  child: Text(
+                    'Sab suno (jaanch mode): "Suna:" me dikhta hai Zoya kya '
+                    'sun rahi hai. Zyada battery lagti hai. Naam pakda jaane '
+                    'lage to ise band kar dena.',
+                    style: TextStyle(fontSize: 12, color: Colors.white60),
+                  ),
+                ),
+              ),
+              Switch(
+                value: _free,
+                onChanged: (v) async {
+                  await _settings.setWakeFree(v);
+                  setState(() => _free = v);
+                  if (_on) {
+                    await WakeService.instance.stop();
+                    final err = await WakeService.instance.start();
+                    if (err != null) _snack(err);
+                  }
+                },
+              ),
+            ],
           ),
           _label('AUTO STOP · koi na bole to'),
           Wrap(

@@ -94,7 +94,7 @@ class SettingsService {
   /// Wake word ke shabd (comma se alag). "hey zoya" ke kuch milte-julte
   /// roop bhi, kyunki "zoya" naam model ko aksar alag sunai deta hai.
   static const defaultWakePhrases =
-      'hey zoya, hey zoe a, hey joy a, hey soy a';
+      'hey zoya, hello zoya, ok zoya, hi zoya, hey zoe a, hey joy a, hey soy a';
 
   Future<String> getWakePhrasesText() async {
     final prefs = await SharedPreferences.getInstance();
@@ -109,6 +109,18 @@ class SettingsService {
         .where((e) => e.isNotEmpty)
         .toList();
     return list.isEmpty ? ['hey zoya'] : list;
+  }
+
+  /// true: Vosk sab kuch sunta hai (jaanch aasan, par zyada battery).
+  /// false: sirf wake shabd sunta hai (halka).
+  Future<bool> getWakeFree() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('wake_free') ?? true;
+  }
+
+  Future<void> setWakeFree(bool v) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('wake_free', v);
   }
 
   Future<void> setWakePhrases(String text) async {

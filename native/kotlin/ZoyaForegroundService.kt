@@ -33,6 +33,10 @@ class ZoyaForegroundService : Service(), RecognitionListener {
         @Volatile
         var status: String = "off"
 
+        /** Vosk ne aakhri baar kya suna (jaanch ke liye). */
+        @Volatile
+        var heard: String = ""
+
         private const val PREFS = "zoya_native"
     }
 
@@ -43,6 +47,13 @@ class ZoyaForegroundService : Service(), RecognitionListener {
     private var recognizer: Recognizer? = null
     private var speech: SpeechService? = null
     private var phrases: List<String> = listOf("hey zoya")
+    private var free = true
+
+    // "Zoya" naam model ko aksar alag sunai deta hai, ye milte-julte roop hain
+    private val nameVariants = listOf(
+        "zoya", "zoe a", "joya", "joy a", "soya", "soy a",
+        "zoey", "zoia", "zoi a", "noya", "toya", "joey a"
+    )
     private var triggered = false
     private var wantListening = false
 
@@ -69,6 +80,13 @@ class ZoyaForegroundService : Service(), RecognitionListener {
             }
         }
         if (phrases.isEmpty()) phrases = listOf("hey zoya")
+
+        if (intent != null && intent.hasExtra("free")) {
+            free = intent.getBooleanExtra("free", true)
+            prefs.edit().putBoolean("free", free).apply()
+        } else {
+            free = prefs.getBoolean("free", true)
+        }
 
         rebuildAndListen()
         return START_STICKY
@@ -142,7 +160,9 @@ class ZoyaForegroundService : Service(), RecognitionListener {
                 phrases.forEach { put(it) }
                 put("[unk]")
             }.toString()
-            recognizer = Recognizer(m, 16000.0f, grammar)
+            // free: sab kuch sunta hai (jaanch/aasaan), warna sirf wake shabd (halka)
+            recognizer =
+                if (free) Recognizer(m, 16000.0f) else Recognizer(m, 16000.0f, grammar)
             startListening()
         } catch (e: Exception) {
             status = "error: ${e.message}"
@@ -196,7 +216,13 @@ class ZoyaForegroundService : Service(), RecognitionListener {
             ""
         }
         if (text.isBlank()) return
-        if (phrases.any { text.contains(it) }) trigger()
+        heard = text
+        if (matches(text)) trigger()
+    }
+
+    private fun matches(t: String): Boolean {
+        if (phrases.any { t.contains(it) }) return true
+        return free && nameVariants.any { t.contains(it) }
     }
 
     private fun trigger() {

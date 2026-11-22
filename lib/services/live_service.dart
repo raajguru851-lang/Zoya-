@@ -36,6 +36,10 @@ class LiveService {
   /// true: Zoya bol rahi ho tab bhi tum beech me tok sakte ho. Sirf earphones
   /// me ON rakho, speaker me Zoya khud ki awaaz sun leti hai.
   bool bargeIn = false;
+
+  /// Sirf wake word wale session me 'sleep_now' tool do. Normal Voice me
+  /// nahi, warna Hindi ke aam shabd (jaise 'bas') se session band ho jata hai.
+  bool enableSleepTool = false;
   bool _sleepPending = false;
   final _mem = MemoryService();
   String _uBuf = '';
@@ -73,13 +77,23 @@ class LiveService {
 
     final mode = Modes.byId(await _settings.getMode());
     final memBlock = await _mem.promptBlock(recentLines: 10);
-    final prompt = '${AssistantService.basePrompt}\n\n'
+    const languageRule =
+        'BHASHA NIYAM (sabse zaroori): User Hindi, Hinglish ya English me '
+        'bolega. Hamesha Hindi/Hinglish ya English me hi jawab do, jis bhasha '
+        'me user bole usi me. Kabhi koi aur bhasha (jaise Spanish, French, '
+        'Arabic) mat bolo. Awaaz saaf na ho to Hindi me kaho "dobara bolo".';
+    final sleepRule = enableSleepTool
+        ? ' Jab user saaf shabdon me alvida kahe ("bye", "alvida", '
+            '"good night", "so ja", "ab band ho ja") tabhi sleep_now tool '
+            'call karo aur chhota alvida bolo. "bas", "theek hai" jaise aam '
+            'shabdon par kabhi sleep_now call mat karo.'
+        : '';
+    final prompt = '$languageRule\n\n${AssistantService.basePrompt}\n\n'
         'Abhi ka mode: ${mode.name}. ${mode.prompt}\n\n'
         'Tum awaaz me baat kar rahi ho, isliye chhote, natural, bolchaal '
-        'wale jawab do. Agar user "ruk jao", "stop" ya "chup" bole to turant '
-        'ruk jao aur sirf "theek hai" kaho. Jab user baat khatam kare '
-        '("bye", "so ja", "bas") to sleep_now tool call karo aur chhota '
-        'alvida bolo.\n\n${PhoneTools.prompt}'
+        'wale jawab do. Agar tum bol rahi ho aur user beech me "ruk jao" '
+        'ya "stop" bole to turant ruk jao.$sleepRule\n\n'
+        '${PhoneTools.prompt}'
         '${memBlock.isEmpty ? '' : '\n\n$memBlock'}';
 
     try {
@@ -118,9 +132,20 @@ class LiveService {
           },
           'tools': [
             {
-              'functionDeclarations': [...PhoneTools.declarations, _sleepDecl]
+              'functionDeclarations': [
+                ...PhoneTools.declarations,
+                if (enableSleepTool) _sleepDecl,
+              ]
             }
           ],
+          'realtimeInputConfig': {
+            'automaticActivityDetection': {
+              'startOfSpeechSensitivity': 'START_SENSITIVITY_HIGH',
+              'endOfSpeechSensitivity': 'END_SENSITIVITY_HIGH',
+              'prefixPaddingMs': 100,
+              'silenceDurationMs': 700,
+            },
+          },
           'inputAudioTranscription': {},
           'outputAudioTranscription': {},
         }
@@ -232,6 +257,7 @@ class LiveService {
       numChannels: 1,
       echoCancel: true,
       noiseSuppress: true,
+      autoGain: true,
     ));
     _micSub = stream.listen((Uint8List chunk) {
       if (!_setupDone || !_active) return;

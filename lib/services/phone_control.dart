@@ -115,9 +115,11 @@ class PhoneControl {
     });
   }
 
-  Future<bool> wakeStart(List<String> phrases) async {
+  Future<bool> wakeStart(List<String> phrases, bool free) async {
     try {
-      return (await _ch.invokeMethod<bool>('wakeStart', phrases)) ?? false;
+      return (await _ch.invokeMethod<bool>(
+              'wakeStart', {'phrases': phrases, 'free': free})) ??
+          false;
     } on PlatformException {
       return false;
     }
@@ -127,6 +129,15 @@ class PhoneControl {
   Future<bool> wakePause() => _ask('wakePause');
   Future<bool> wakeResume() => _ask('wakeResume');
   Future<bool> wakeConsumePending() => _ask('wakeConsumePending');
+
+  /// Vosk ne aakhri baar kya suna (jaanch ke liye).
+  Future<String> wakeHeard() async {
+    try {
+      return (await _ch.invokeMethod<String>('wakeHeard')) ?? '';
+    } on PlatformException {
+      return '';
+    }
+  }
 
   Future<String> wakeStatus() async {
     try {

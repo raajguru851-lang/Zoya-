@@ -106,10 +106,13 @@ class MainActivity : FlutterActivity() {
                     }
                     "wakeStart" -> {
                         try {
-                            val phrases = (call.arguments as? List<*>)
+                            val args = call.arguments as? Map<*, *>
+                            val phrases = (args?.get("phrases") as? List<*>)
                                 ?.map { it.toString() } ?: emptyList()
+                            val free = args?.get("free") as? Boolean ?: true
                             val i = Intent(this, ZoyaForegroundService::class.java)
                                 .putExtra("phrases", phrases.toTypedArray())
+                                .putExtra("free", free)
                             if (Build.VERSION.SDK_INT >= 26) startForegroundService(i)
                             else startService(i)
                             result.success(true)
@@ -131,6 +134,7 @@ class MainActivity : FlutterActivity() {
                         result.success(true)
                     }
                     "wakeStatus" -> result.success(ZoyaForegroundService.status)
+                    "wakeHeard" -> result.success(ZoyaForegroundService.heard)
                     "wakeConsumePending" -> {
                         val p = WakeBridge.pending
                         WakeBridge.pending = false

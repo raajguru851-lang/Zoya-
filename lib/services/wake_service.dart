@@ -29,14 +29,20 @@ class WakeService {
         return;
       }
       if (await _settings.getWake() && await _settings.getActive()) {
-        await _pc.wakeStart(await _settings.getWakePhrases());
+        await _pc.wakeStart(
+          await _settings.getWakePhrases(),
+          await _settings.getWakeFree(),
+        );
       }
     } catch (_) {}
   }
 
   /// Background sunna shuru. Sab theek ho to null, warna error ka message.
   Future<String?> start() async {
-    final ok = await _pc.wakeStart(await _settings.getWakePhrases());
+    final ok = await _pc.wakeStart(
+          await _settings.getWakePhrases(),
+          await _settings.getWakeFree(),
+        );
     return ok
         ? null
         : 'Background service shuru nahi hui. App permissions me Mic aur '
@@ -85,6 +91,7 @@ class WakeService {
     };
     live.onError = (_) => _sleep();
     live.onSleep = _sleep;
+    live.enableSleepTool = true;
     live.bargeIn = await _pc.hasHeadphones();
 
     await live.start();
