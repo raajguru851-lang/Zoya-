@@ -102,7 +102,7 @@ class _WakeScreenState extends State<WakeScreen> {
     if (_status == 'loading') {
       return 'Model load ho raha hai... (pehli baar thoda time lagta hai)';
     }
-    if (_status == 'listening') return 'Sun rahi hai... bolo: "Wake up Zoya"';
+    if (_status == 'listening') return 'Sun rahi hai... bolo: "Wake up Sara"';
     if (_status == 'awake') return 'Jaag gayi!';
     if (_status == 'paused') return 'Abhi baat chal rahi hai.';
     if (_status.startsWith('error')) return 'Dikkat: $_status';
@@ -162,7 +162,7 @@ class _WakeScreenState extends State<WakeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Wake Word'),
-            Text('OFFLINE VOSK · WAKE UP ZOYA',
+            Text('OFFLINE VOSK · WAKE UP SARA',
                 style: TextStyle(
                     fontSize: 12, letterSpacing: 2, color: Colors.white60)),
           ],
@@ -209,20 +209,45 @@ class _WakeScreenState extends State<WakeScreen> {
                   const Padding(
                     padding: EdgeInsets.only(top: 6),
                     child: Text(
-                      'Pehle Home par Zoya Active ON karo.',
+                      'Pehle Home par Sara Active ON karo.',
                       style: TextStyle(fontSize: 12, color: Colors.white70),
                     ),
                   ),
                 const Padding(
                   padding: EdgeInsets.only(top: 6),
                   child: Text(
-                    'ON karne par notification dikhegi. Naam sunte hi Zoya '
+                    'ON karne par notification dikhegi. Naam sunte hi Sara '
                     'jaag jati hai. Naam pehchanne ka kaam phone par hi hota '
                     'hai, jaagne se pehle awaaz internet par nahi jaati.',
                     style: TextStyle(fontSize: 12, color: Colors.white70),
                   ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: () => WakeService.instance.testWake(),
+            icon: const Icon(Icons.bolt),
+            label: const Text('Jagane ka test (bina bole)'),
+          ),
+          const SizedBox(height: 8),
+          ValueListenableBuilder<List<String>>(
+            valueListenable: WakeService.instance.log,
+            builder: (context, lines, _) => Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: NeonColors.card,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: NeonColors.purple.withAlpha(90)),
+              ),
+              child: Text(
+                lines.isEmpty
+                    ? 'Log: abhi kuch nahi'
+                    : 'Log:\n${lines.join('\n')}',
+                style: const TextStyle(fontSize: 12, color: Colors.white70),
+              ),
             ),
           ),
           _label('WAKE SHABD · comma se alag'),
@@ -232,7 +257,7 @@ class _WakeScreenState extends State<WakeScreen> {
             decoration: InputDecoration(
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16)),
-              hintText: 'wake up zoya',
+              hintText: 'wake up sara, hey sara',
               suffixIcon: IconButton(
                 icon: const Icon(Icons.save_outlined),
                 onPressed: _savePhrases,
@@ -242,8 +267,8 @@ class _WakeScreenState extends State<WakeScreen> {
           const Padding(
             padding: EdgeInsets.only(top: 6),
             child: Text(
-              '"Wake up" sunte hi Zoya jaag jati hai, naam chahe kuch bhi sunai '
-              'de (soy, julia, zulia...). Isliye kisi aur ke "wake up" kehne '
+              '"Wake up" sunte hi Sara jaag jati hai, naam chahe kuch bhi sunai '
+              'de. Isliye kisi aur ke "wake up" kehne '
               'par bhi jaag sakti hai.',
               style: TextStyle(fontSize: 12, color: Colors.white60),
             ),
@@ -254,7 +279,7 @@ class _WakeScreenState extends State<WakeScreen> {
                 child: Padding(
                   padding: EdgeInsets.only(top: 10),
                   child: Text(
-                    'Sab suno (jaanch mode): "Suna:" me dikhta hai Zoya kya '
+                    'Sab suno (jaanch mode): "Suna:" me dikhta hai Sara kya '
                     'sun rahi hai. Zyada battery lagti hai. Naam pakda jaane '
                     'lage to ise band kar dena.',
                     style: TextStyle(fontSize: 12, color: Colors.white60),

@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-/// Zoya ke saare modes yahan hain.
+/// Sara ke saare modes yahan hain.
 /// Naya mode add karna ho to list me ek AssistantMode jod do.
 class AssistantMode {
   final String id;

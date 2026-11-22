@@ -20,8 +20,8 @@ import org.vosk.android.SpeechService
 import org.vosk.android.StorageService
 
 /**
- * Background me Zoya ko zinda rakhta hai aur offline (Vosk) se
- * "Hey Zoya" jaisa wake word sunta rehta hai. Android ke niyam se iski
+ * Background me Sara ko zinda rakhta hai aur offline (Vosk) se
+ * "Hey Sara" jaisa wake word sunta rehta hai. Android ke niyam se iski
  * notification hamesha dikhti hai.
  */
 class ZoyaForegroundService : Service(), RecognitionListener {
@@ -50,24 +50,19 @@ class ZoyaForegroundService : Service(), RecognitionListener {
     private var model: Model? = null
     private var recognizer: Recognizer? = null
     private var speech: SpeechService? = null
-    private var phrases: List<String> = listOf("hey zoya")
+    private var phrases: List<String> = listOf("hey sara")
     private var free = true
 
-    // "Zoya" naam model ko aksar alag sunai deta hai (soy, julia, zulia...)
+    // "Sara" naam model ko aksar thoda alag sunai deta hai (sarah, zara...)
     // Grammar me ye sab jode jaate hain, taaki "wake up ___" pakda jaye.
     private val nameVariants = listOf(
-        "zoya", "zoe a", "joya", "joy a", "soya", "soy a", "zoey", "zoia",
-        "zoi a", "noya", "toya", "joey a", "julia", "zulia", "zuya", "soy",
-        "joy", "zoe", "there"
+        "sara", "sarah", "zara", "sera", "cera", "sarra", "sar a", "sahra", "sora"
     )
 
     // Sab-suno mode me inme se koi naam sunai de to bhi jaag jao
-    private val strictNames = listOf(
-        "zoya", "zoe a", "joya", "joy a", "soya", "soy a", "zoey", "zoia",
-        "zoi a", "noya", "toya", "joey a", "julia", "zulia", "zuya"
-    )
+    private val strictNames = listOf("sara", "sarah", "zara", "sera", "sarra", "cera")
 
-    /** "wake up zoya" jaise 3+ shabd ke wake phrase ka shuruaati hissa ("wake up"). */
+    /** "wake up sara" jaise 3+ shabd ke wake phrase ka shuruaati hissa ("wake up"). */
     private fun anchors(): List<String> = phrases.mapNotNull { p ->
         val w = p.split(" ").filter { it.isNotEmpty() }
         if (w.size >= 3) w.dropLast(1).joinToString(" ") else null
@@ -113,7 +108,7 @@ class ZoyaForegroundService : Service(), RecognitionListener {
                 phrases = saved.split("|").filter { it.isNotEmpty() }
             }
         }
-        if (phrases.isEmpty()) phrases = listOf("hey zoya")
+        if (phrases.isEmpty()) phrases = listOf("hey sara")
 
         if (intent != null && intent.hasExtra("free")) {
             free = intent.getBooleanExtra("free", true)
@@ -131,7 +126,7 @@ class ZoyaForegroundService : Service(), RecognitionListener {
             if (Build.VERSION.SDK_INT >= 26) {
                 val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
                 nm.createNotificationChannel(
-                    NotificationChannel(channelId, "Zoya", NotificationManager.IMPORTANCE_LOW)
+                    NotificationChannel(channelId, "Sara", NotificationManager.IMPORTANCE_LOW)
                 )
             }
             val open = PendingIntent.getActivity(
@@ -144,8 +139,8 @@ class ZoyaForegroundService : Service(), RecognitionListener {
                 if (Build.VERSION.SDK_INT >= 26) Notification.Builder(this, channelId)
                 else Notification.Builder(this)
             val notification = builder
-                .setContentTitle("Zoya active hai")
-                .setContentText("\"Wake up Zoya\" bolkar jagao")
+                .setContentTitle("Sara active hai")
+                .setContentText("\"Wake up Sara\" bolkar jagao")
                 .setSmallIcon(android.R.drawable.ic_btn_speak_now)
                 .setContentIntent(open)
                 .setOngoing(true)

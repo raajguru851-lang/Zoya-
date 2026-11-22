@@ -26,7 +26,7 @@ class SettingsService {
     await prefs.setString(_modeKey, id);
   }
 
-  /// Zoya Active switch. Native code bhi ye 'zoya_active' key padhta hai.
+  /// Sara Active switch. Native code bhi ye 'zoya_active' key padhta hai.
   Future<bool> getActive() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool('zoya_active') ?? false;
@@ -47,7 +47,7 @@ class SettingsService {
     await prefs.setString('picovoice_key', key.trim());
   }
 
-  /// "Wake up Zoya" background sunna ON hai ya nahi.
+  /// "Wake up Sara" background sunna ON hai ya nahi.
   Future<bool> getWake() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool('wake_on') ?? false;
@@ -69,7 +69,7 @@ class SettingsService {
     await prefs.setInt('orb_design', i);
   }
 
-  /// Kitne second chup rehne par Zoya so jaye (5, 10 ya 15).
+  /// Kitne second chup rehne par Sara so jaye (5, 10 ya 15).
   Future<int> getAutoStop() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getInt('auto_stop') ?? 10;
@@ -91,13 +91,13 @@ class SettingsService {
     await prefs.setInt('doll_index', i);
   }
 
-  /// Wake word ke shabd (comma se alag). "wake up zoya" me "wake up" sunte
-  /// hi Zoya jaag jati hai, kyunki "zoya" naam model ko aksar alag sunai deta hai.
-  static const defaultWakePhrases = 'wake up zoya';
+  /// Wake word ke shabd (comma se alag). "wake up sara" me "wake up" sunte
+  /// hi Sara jaag jati hai, kyunki "sara" naam model ko aksar alag sunai deta hai.
+  static const defaultWakePhrases = 'wake up sara, hey sara';
 
   Future<String> getWakePhrasesText() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('wake_phrases_v2') ?? defaultWakePhrases;
+    return prefs.getString('wake_phrases_v3') ?? defaultWakePhrases;
   }
 
   Future<List<String>> getWakePhrases() async {
@@ -107,7 +107,7 @@ class SettingsService {
         .map((e) => e.trim().toLowerCase())
         .where((e) => e.isNotEmpty)
         .toList();
-    return list.isEmpty ? ['hey zoya'] : list;
+    return list.isEmpty ? ['hey sara'] : list;
   }
 
   /// true: Vosk sab kuch sunta hai (jaanch aasan, par zyada battery).
@@ -124,6 +124,6 @@ class SettingsService {
 
   Future<void> setWakePhrases(String text) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('wake_phrases_v2', text.trim());
+    await prefs.setString('wake_phrases_v3', text.trim());
   }
 }

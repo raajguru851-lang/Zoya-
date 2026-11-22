@@ -95,7 +95,7 @@ class _CharacterScreenState extends State<CharacterScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text('Character'),
-            Text('CHOOSE YOUR ZOYA · ${Dolls.all.length} LOOK',
+            Text('CHOOSE YOUR SARA · ${Dolls.all.length} LOOK',
                 style: const TextStyle(
                     fontSize: 12, letterSpacing: 2, color: Colors.white60)),
           ],

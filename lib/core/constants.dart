@@ -1,4 +1,4 @@
 /// App ke saare constants (naam, keys, etc.) yahan rahenge.
 class AppConstants {
-  static const appName = 'Zoya';
+  static const appName = 'Sara';
 }

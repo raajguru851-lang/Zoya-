@@ -80,7 +80,7 @@ class PhoneControl {
     }
   }
 
-  /// Rangeen border dikhana/chhupana (Zoya Active ke hisaab se).
+  /// Rangeen border dikhana/chhupana (Sara Active ke hisaab se).
   Future<void> refreshBorder() async {
     try {
       await _ch.invokeMethod('refreshBorder');
@@ -106,7 +106,7 @@ class PhoneControl {
   /// Mic, camera aur notification ki permission ek saath maango.
   Future<bool> requestAll() => _ask('requestAll');
 
-  // ---------- Wake word ("Hey Zoya") ----------
+  // ---------- Wake word ("Hey Sara") ----------
   /// Native se aane wale 'onWake' (wake word suna gaya) ko sunne ke liye.
   void setWakeHandler(Future<void> Function() onWake) {
     _ch.setMethodCallHandler((call) async {
@@ -125,7 +125,7 @@ class PhoneControl {
     }
   }
 
-  /// Voice session ke dauran Zoya ko background me zinda rakho.
+  /// Voice session ke dauran Sara ko background me zinda rakho.
   Future<bool> keepAliveStart() => _ask('keepAliveStart');
   Future<bool> keepAliveStop() => _ask('keepAliveStop');
 

@@ -48,8 +48,8 @@ class _HomeScreenState extends State<HomeScreen> {
     showDialog<void>(
       context: context,
       builder: (_) => const AlertDialog(
-        title: Text('Zoya'),
-        content: Text('Zoya ko Mr ZX KD (Kuldeep Gautam) ne banaya hai.'),
+        title: Text('Sara'),
+        content: Text('Sara ko Mr ZX KD (Kuldeep Gautam) ne banaya hai.'),
       ),
     );
   }
@@ -135,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 route: AppRoutes.control),
             _tile(Icons.forum_outlined, 'WhatsApp Automation', soon: true),
             _tile(Icons.hearing, 'Wake Word',
-                sub: 'Wake up Zoya', route: AppRoutes.wake),
+                sub: 'Wake up Sara', route: AppRoutes.wake),
             _tile(Icons.terminal, 'Termux agent', soon: true),
             _tile(Icons.security, 'App permissions',
                 route: AppRoutes.permissions),

@@ -1,4 +1,4 @@
-# Build ke time AndroidManifest.xml me Zoya ka service aur queries jodta hai.
+# Build ke time AndroidManifest.xml me Sara ka service aur queries jodta hai.
 p = 'android/app/src/main/AndroidManifest.xml'
 s = open(p).read()
 
@@ -16,7 +16,7 @@ service = '''
         <service
             android:name=".ZoyaAccessibilityService"
             android:exported="true"
-            android:label="Zoya"
+            android:label="Sara"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService"/>

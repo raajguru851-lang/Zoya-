@@ -122,7 +122,7 @@ class _VoiceScreenState extends State<VoiceScreen> {
       case LiveState.listening:
         return 'Sun rahi hoon... bolo';
       case LiveState.speaking:
-        return 'Zoya bol rahi hai...';
+        return 'Sara bol rahi hai...';
     }
   }
 
@@ -209,7 +209,7 @@ class _VoiceScreenState extends State<VoiceScreen> {
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
             child: Text(
-              'Speaker me Zoya bolte waqt sunti nahi. Earphones lagao to beech me tok sakte ho.',
+              'Speaker me Sara bolte waqt sunti nahi. Earphones lagao to beech me tok sakte ho.',
               style: TextStyle(fontSize: 12),
               textAlign: TextAlign.center,
             ),

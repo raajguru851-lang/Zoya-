@@ -27,19 +27,19 @@ jobs:
           cp -r tmp_app/android ./android
           rm -rf tmp_app
           # App ka naam (phone me icon ke neeche)
-          sed -i 's#android:label="[^"]*"#android:label="Zoya"#' android/app/src/main/AndroidManifest.xml
+          sed -i 's#android:label="[^"]*"#android:label="Sara"#' android/app/src/main/AndroidManifest.xml
           # Mic permission + minSdk 24 (record package ke liye)
           sed -i 's#<application#<uses-permission android:name="android.permission.RECORD_AUDIO"/>\n    <application#' android/app/src/main/AndroidManifest.xml
           sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 24/; s/minSdkVersion flutter.minSdkVersion/minSdkVersion 24/' android/app/build.gradle.kts android/app/build.gradle 2>/dev/null || true
           # compileSdk 36: naye packages (record waghera) ko naya Android API chahiye
           sed -i 's/compileSdk\(Version\)\?[ =]*flutter\.compileSdkVersion/compileSdk = 36/' android/app/build.gradle.kts android/app/build.gradle 2>/dev/null || true
-          # Zoya ka native (Kotlin) code: phone control
+          # Sara ka native (Kotlin) code: phone control
           cp native/kotlin/*.kt android/app/src/main/kotlin/com/example/assistant_app/
           mkdir -p android/app/src/main/res/xml
           cp native/res/xml/*.xml android/app/src/main/res/xml/
           cp native/res/values/*.xml android/app/src/main/res/values/
           python3 native/patch_manifest.py
-          # Zoya ka app icon (logo)
+          # Sara ka app icon (logo)
           cp -r native/icons/* android/app/src/main/res/
           # Internet permission (release build me zaroori)
           sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' android/app/src/main/AndroidManifest.xml
@@ -51,8 +51,8 @@ jobs:
           wget -q https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip -O /tmp/vosk.zip
           unzip -q /tmp/vosk.zip -d /tmp/vosk
           mv /tmp/vosk/*/* android/app/src/main/assets/model-en-us/
-          echo "zoya-vosk-1" > android/app/src/main/assets/model-en-us/uuid
-          cp native/zoya-proguard.pro android/app/zoya-proguard.pro
+          echo "sara-vosk-1" > android/app/src/main/assets/model-en-us/uuid
+          cp native/sara-proguard.pro android/app/sara-proguard.pro
           if [ -f android/app/build.gradle.kts ]; then
             printf '\ndependencies {\n    implementation("com.alphacephei:vosk-android:0.3.75@aar")\n    implementation("net.java.dev.jna:jna:5.18.1@aar")\n}\n' >> android/app/build.gradle.kts
           else
@@ -65,7 +65,7 @@ jobs:
           mkdir -p ~/.gradle/init.d
           # naye Android API (36) par warning band
           echo "android.suppressUnsupportedCompileSdk=36" >> android/gradle.properties
-          cat > ~/.gradle/init.d/zoya.gradle <<'GRADLE'
+          cat > ~/.gradle/init.d/sara.gradle <<'GRADLE'
           allprojects {
               tasks.configureEach { t ->
                   if (t.name.toLowerCase().contains('lintvital')) {
@@ -81,7 +81,7 @@ jobs:
                   if (p.name == 'app' && p.hasProperty('android')) {
                       try {
                           p.android.buildTypes.release {
-                              proguardFiles p.file('zoya-proguard.pro')
+                              proguardFiles p.file('sara-proguard.pro')
                           }
                       } catch (Exception e) {
                           println "proguard skip: ${e}"

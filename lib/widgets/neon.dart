@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-/// Zoya ke neon rang.
+/// Sara ke neon rang.
 class NeonColors {
   static const cyan = Color(0xFF00E5FF);
   static const blue = Color(0xFF2979FF);

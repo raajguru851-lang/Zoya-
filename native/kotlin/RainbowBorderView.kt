@@ -11,7 +11,7 @@ import android.graphics.RectF
 import android.view.View
 import android.view.animation.LinearInterpolator
 
-/** Poori screen ke kinare par ghoomti 12 rangon ki line (Zoya active hone ka nishaan). */
+/** Poori screen ke kinare par ghoomti 12 rangon ki line (Sara active hone ka nishaan). */
 class RainbowBorderView(context: Context) : View(context) {
 
     private val colors = intArrayOf(

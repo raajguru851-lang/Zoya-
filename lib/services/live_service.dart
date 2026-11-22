@@ -34,8 +34,8 @@ class LiveService {
   bool _flushing = false;
   bool _dropAudio = false;
 
-  /// true: Zoya bol rahi ho tab bhi tum beech me tok sakte ho. Sirf earphones
-  /// me ON rakho, speaker me Zoya khud ki awaaz sun leti hai.
+  /// true: Sara bol rahi ho tab bhi tum beech me tok sakte ho. Sirf earphones
+  /// me ON rakho, speaker me Sara khud ki awaaz sun leti hai.
   bool bargeIn = false;
 
   /// Sirf wake word wale session me 'sleep_now' tool do. Normal Voice me
@@ -47,7 +47,7 @@ class LiveService {
   String _uBuf = '';
   String _zBuf = '';
 
-  /// Zoya ne 'sleep_now' bola: baat khatam, ab so jao.
+  /// Sara ne 'sleep_now' bola: baat khatam, ab so jao.
   void Function()? onSleep;
 
   static const _sleepDecl = <String, dynamic>{
@@ -204,7 +204,7 @@ class LiveService {
       final sc = data['serverContent'];
       if (sc is! Map) return;
 
-      // User ne beech me tok diya: Zoya turant chup.
+      // User ne beech me tok diya: Sara turant chup.
       if (sc['interrupted'] == true) {
         _dropAudio = false;
         _listenTimer?.cancel();
@@ -267,7 +267,7 @@ class LiveService {
     _micSub = stream.listen((Uint8List chunk) {
       if (!_setupDone || !_active) return;
       if (!bargeIn) {
-        // Zoya bol rahi ho to mic band rakho (apni awaaz na sune).
+        // Sara bol rahi ho to mic band rakho (apni awaaz na sune).
         final until = _speakUntil.add(const Duration(milliseconds: 700));
         if (DateTime.now().isBefore(until)) return;
       }
@@ -328,7 +328,7 @@ class LiveService {
     _flushing = false;
   }
 
-  /// "Chup karo" button: Zoya ki awaaz abhi band.
+  /// "Chup karo" button: Sara ki awaaz abhi band.
   Future<void> silence() async {
     _dropAudio = true;
     _listenTimer?.cancel();

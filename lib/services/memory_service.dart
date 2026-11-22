@@ -14,7 +14,7 @@ class MemoryLine {
   MemoryLine(this.text, this.isUser);
 }
 
-/// Zoya ki yaaddaasht:
+/// Sara ki yaaddaasht:
 /// 1. Facts: user ke bare me zaroori baatein (naam, pasand, birthday...).
 /// 2. Recent: pichhli baat-cheet ki lines (Chat aur Voice dono ki).
 /// Sab kuch sirf phone me rehta hai. Prompt me jaata hai, isliye Gemini ko
@@ -138,7 +138,7 @@ class MemoryService {
       if (last.isNotEmpty) {
         b.writeln('\nPichhli baat-cheet (sabse nayi neeche):');
         for (final l in last) {
-          b.writeln('${l.isUser ? 'User' : 'Zoya'}: ${l.text}');
+          b.writeln('${l.isUser ? 'User' : 'Sara'}: ${l.text}');
         }
       }
     }

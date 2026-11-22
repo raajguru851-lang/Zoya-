@@ -5,7 +5,7 @@ import '../../services/settings_service.dart';
 import '../../services/wake_service.dart';
 import '../../widgets/neon.dart';
 
-/// Zoya Active switch. Permissions poori hon aur switch ON ho, tabhi
+/// Sara Active switch. Permissions poori hon aur switch ON ho, tabhi
 /// screen ke kinare rangeen light ghoomti hai.
 class ActiveCard extends StatefulWidget {
   const ActiveCard({super.key});
@@ -92,9 +92,9 @@ class _ActiveCardState extends State<ActiveCard> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final ready = _acc && _mic;
     final msg = _on
-        ? 'Zoya active hai. Screen ke kinare rangeen light ghoom rahi hai.'
+        ? 'Sara active hai. Screen ke kinare rangeen light ghoom rahi hai.'
         : ready
-            ? 'Switch ON karo, Zoya active ho jayegi.'
+            ? 'Switch ON karo, Sara active ho jayegi.'
             : 'Pehle neeche ki permissions do.';
 
     return NeonBorder(
@@ -107,7 +107,7 @@ class _ActiveCardState extends State<ActiveCard> with WidgetsBindingObserver {
             Row(
               children: [
                 const Expanded(
-                  child: Text('Zoya Active',
+                  child: Text('Sara Active',
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
                 ),

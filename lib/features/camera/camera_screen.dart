@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../services/vision_service.dart';
 import '../../widgets/neon.dart';
 
-/// Camera se photo kheencho, Zoya usko dekhkar batati hai.
+/// Camera se photo kheencho, Sara usko dekhkar batati hai.
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
 
@@ -86,7 +86,7 @@ class _CameraScreenState extends State<CameraScreen>
       if (!mounted) return;
       setState(() {
         _error = e.code.contains('Denied')
-            ? 'Camera ki permission do: Phone Settings → Apps → Zoya → '
+            ? 'Camera ki permission do: Phone Settings → Apps → Sara → '
                 'Permissions → Camera.'
             : 'Camera error: ${e.description ?? e.code}';
       });

@@ -5,8 +5,8 @@ import android.os.Handler
 import android.os.Looper
 
 /**
- * "Hey Zoya" sunai dene par Flutter (Dart) ko khabar deta hai.
- * Flutter jaaga ho to seedha batata hai, warna Zoya app ko aage laata hai.
+ * "Hey Sara" sunai dene par Flutter (Dart) ko khabar deta hai.
+ * Flutter jaaga ho to seedha batata hai, warna Sara app ko aage laata hai.
  */
 object WakeBridge {
     /** MainActivity (Flutter jinda ho) tab ye set karti hai. */

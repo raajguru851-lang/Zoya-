@@ -3,7 +3,7 @@ import 'memory_service.dart';
 import 'phone_control.dart';
 import 'settings_service.dart';
 
-/// Zoya (AI) jo phone-actions kar sakti hai, unki list aur unko chalane ka kaam.
+/// Sara (AI) jo phone-actions kar sakti hai, unki list aur unko chalane ka kaam.
 /// Naya action jodna ho to declarations me ek entry aur run me ek case jodo.
 class PhoneTools {
   static final _pc = PhoneControl();
@@ -33,7 +33,7 @@ class PhoneTools {
   static const declarations = <Map<String, dynamic>>[
     {
       'name': 'set_mode',
-      'description': 'Zoya ka mode badlo (gf, bestfriend, professional, '
+      'description': 'Sara ka mode badlo (gf, bestfriend, professional, '
           'funny, motivator, teacher).',
       'parameters': {
         'type': 'object',
@@ -141,8 +141,8 @@ class PhoneTools {
       return 'Abhi ${m.name} chal raha hai.';
     }
     if (!await _pc.isEnabled()) {
-      return 'Accessibility band hai. User ko batao ki Zoya ke Phone Control '
-          'screen se Accessibility me Zoya ko ON kare.';
+      return 'Accessibility band hai. User ko batao ki Sara ke Phone Control '
+          'screen se Accessibility me Sara ko ON kare.';
     }
     bool ok;
     switch (name) {

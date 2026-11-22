@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/neon.dart';
 
-/// Zoya ka neon dark theme. Rang badalne ho to widgets/neon.dart ke
+/// Sara ka neon dark theme. Rang badalne ho to widgets/neon.dart ke
 /// NeonColors me badlo.
 class AppTheme {
   static final dark = _build();

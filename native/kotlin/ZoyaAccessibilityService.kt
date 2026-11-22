@@ -40,7 +40,7 @@ class ZoyaAccessibilityService : AccessibilityService() {
         super.onDestroy()
     }
 
-    /** Zoya Active ON ho aur mic permission ho, tabhi rangeen border dikhao. */
+    /** Sara Active ON ho aur mic permission ho, tabhi rangeen border dikhao. */
     fun refreshBorder() {
         val prefs = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
         val active = prefs.getBoolean("flutter.zoya_active", false)
@@ -89,7 +89,7 @@ class ZoyaAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() {}
 
-    /** Wake word par Zoya app ko aage lao (Flutter band ho tab). */
+    /** Wake word par Sara app ko aage lao (Flutter band ho tab). */
     fun launchSelf() {
         try {
             val i = Intent(this, MainActivity::class.java).addFlags(

@@ -69,8 +69,8 @@ class _ControlScreenState extends State<ControlScreen>
               leading: Icon(_enabled ? Icons.check_circle : Icons.warning),
               title: Text(_enabled ? 'Control chalu hai' : 'Control band hai'),
               subtitle: Text(_enabled
-                  ? 'Zoya phone ko control kar sakti hai'
-                  : 'Neeche button se Accessibility me Zoya ko ON karo'),
+                  ? 'Sara phone ko control kar sakti hai'
+                  : 'Neeche button se Accessibility me Sara ko ON karo'),
             ),
           ),
           if (!_enabled)

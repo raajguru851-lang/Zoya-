@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/memory_service.dart';
 import '../../widgets/neon.dart';
 
-/// Zoya ne user ke bare me kya yaad rakha hai, yahan dikhta hai.
+/// Sara ne user ke bare me kya yaad rakha hai, yahan dikhta hai.
 class MemoryScreen extends StatefulWidget {
   const MemoryScreen({super.key});
 
@@ -94,7 +94,7 @@ class _MemoryScreenState extends State<MemoryScreen> {
                     ],
                   ),
                   const Text(
-                    'Zoya tumhari zaroori baatein aur pichhli baat-cheet yaad '
+                    'Sara tumhari zaroori baatein aur pichhli baat-cheet yaad '
                     'rakhti hai. Ye phone me rehti hain, par jawab banane ke '
                     'liye Gemini (Google) ko bheji jaati hain. Password, card '
                     'ya OTP yahan mat likhna.',
@@ -113,7 +113,7 @@ class _MemoryScreenState extends State<MemoryScreen> {
                   textInputAction: TextInputAction.done,
                   onSubmitted: (_) => _addFact(),
                   decoration: InputDecoration(
-                    hintText: 'Zoya ko kuch yaad karao...',
+                    hintText: 'Sara ko kuch yaad karao...',
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24)),
                   ),
@@ -161,7 +161,7 @@ class _MemoryScreenState extends State<MemoryScreen> {
             onPressed: _facts.isEmpty
                 ? null
                 : () => _confirm('Sab yaadein bhoolein?',
-                    'Zoya tumhare bare me sab kuch bhool jayegi.', _mem.clearFacts),
+                    'Sara tumhare bare me sab kuch bhool jayegi.', _mem.clearFacts),
             icon: const Icon(Icons.delete_sweep_outlined),
             label: const Text('Sab yaadein bhoolo'),
           ),

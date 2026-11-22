@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/phone_control.dart';
 import '../../widgets/neon.dart';
 
-/// Zoya ko jo permissions chahiye, sab ek jagah.
+/// Sara ko jo permissions chahiye, sab ek jagah.
 class PermissionsScreen extends StatefulWidget {
   const PermissionsScreen({super.key});
 
@@ -145,7 +145,7 @@ class _PermissionsScreenState extends State<PermissionsScreen>
           _perm(Icons.photo_camera_outlined, 'Camera',
               'Camera vision ke liye', _cam, _askAll),
           _perm(Icons.notifications_none, 'Notifications',
-              'Background me Zoya ki notification', _notif, _askAll),
+              'Background me Sara ki notification', _notif, _askAll),
           _perm(Icons.battery_charging_full, 'Battery: unrestricted',
               'Background me Android band na kare', _battery,
               _pc.openBattery),
@@ -159,13 +159,13 @@ class _PermissionsScreenState extends State<PermissionsScreen>
           OutlinedButton.icon(
             onPressed: _pc.openAppSettings,
             icon: const Icon(Icons.settings_outlined),
-            label: const Text('Zoya ki App settings kholo'),
+            label: const Text('Sara ki App settings kholo'),
           ),
           const Padding(
             padding: EdgeInsets.only(top: 12),
             child: Text(
               'Agar popup na aaye, to App settings → Permissions me jaakar '
-              'haath se allow karo. Battery me Zoya ko "Unrestricted" chuno.',
+              'haath se allow karo. Battery me Sara ko "Unrestricted" chuno.',
               style: TextStyle(fontSize: 12, color: Colors.white60),
             ),
           ),
