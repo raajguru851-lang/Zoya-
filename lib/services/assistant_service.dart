@@ -67,7 +67,7 @@ class AssistantService {
 
     try {
       // Tool chalane ke baad AI ko natija dena padta hai, isliye loop.
-      for (var step = 0; step < 5; step++) {
+      for (var step = 0; step < 12; step++) {
         final res = await http
             .post(
               uri,

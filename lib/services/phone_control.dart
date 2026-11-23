@@ -99,6 +99,7 @@ class PhoneControl {
 
   Future<bool> hasCamera() => _ask('hasCamera');
   Future<bool> hasNotif() => _ask('hasNotif');
+  Future<bool> hasCall() => _ask('hasCall');
   Future<bool> hasBattery() => _ask('hasBattery');
   Future<bool> openBattery() => _ask('openBattery');
   Future<bool> openAppSettings() => _ask('openAppSettings');

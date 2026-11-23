@@ -28,7 +28,8 @@ service = '''
     '''
 perms = ''.join(
     '<uses-permission android:name="android.permission.%s"/>\n    ' % p
-    for p in ['FOREGROUND_SERVICE', 'FOREGROUND_SERVICE_MICROPHONE', 'POST_NOTIFICATIONS', 'CAMERA']
+    for p in ['FOREGROUND_SERVICE', 'FOREGROUND_SERVICE_MICROPHONE', 'POST_NOTIFICATIONS', 'CAMERA',
+              'CALL_PHONE', 'ANSWER_PHONE_CALLS']
 )
 perms += '<uses-permission android:name="com.android.alarm.permission.SET_ALARM"/>\n    '
 s = s.replace('<application', perms + '<application', 1)

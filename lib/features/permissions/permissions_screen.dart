@@ -18,6 +18,7 @@ class _PermissionsScreenState extends State<PermissionsScreen>
   bool _cam = false;
   bool _notif = false;
   bool _battery = false;
+  bool _call = false;
 
   @override
   void initState() {
@@ -44,6 +45,7 @@ class _PermissionsScreenState extends State<PermissionsScreen>
       _pc.hasCamera(),
       _pc.hasNotif(),
       _pc.hasBattery(),
+      _pc.hasCall(),
     ]);
     if (!mounted) return;
     setState(() {
@@ -52,6 +54,7 @@ class _PermissionsScreenState extends State<PermissionsScreen>
       _cam = r[2];
       _notif = r[3];
       _battery = r[4];
+      _call = r[5];
     });
   }
 
@@ -112,7 +115,8 @@ class _PermissionsScreenState extends State<PermissionsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final done = [_acc, _mic, _cam, _notif, _battery].where((e) => e).length;
+    final done =
+        [_acc, _mic, _cam, _notif, _battery, _call].where((e) => e).length;
     return Scaffold(
       appBar: AppBar(title: const Text('App permissions')),
       body: ListView(
@@ -126,12 +130,12 @@ class _PermissionsScreenState extends State<PermissionsScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    done == 5 ? 'Sab taiyar hai' : '$done / 5 taiyar',
+                    done == 6 ? 'Sab taiyar hai' : '$done / 6 taiyar',
                     style: const TextStyle(
                         fontSize: 18, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 8),
-                  LinearProgressIndicator(value: done / 5),
+                  LinearProgressIndicator(value: done / 6),
                 ],
               ),
             ),
@@ -146,6 +150,8 @@ class _PermissionsScreenState extends State<PermissionsScreen>
               'Camera vision ke liye', _cam, _askAll),
           _perm(Icons.notifications_none, 'Notifications',
               'Background me Sara ki notification', _notif, _askAll),
+          _perm(Icons.call_outlined, 'Phone calls',
+              'Call lagana aur uthana', _call, _askAll),
           _perm(Icons.battery_charging_full, 'Battery: unrestricted',
               'Background me Android band na kare', _battery,
               _pc.openBattery),
@@ -153,7 +159,7 @@ class _PermissionsScreenState extends State<PermissionsScreen>
           FilledButton.icon(
             onPressed: _askAll,
             icon: const Icon(Icons.verified_user_outlined),
-            label: const Text('Mic, Camera, Notification ek saath maango'),
+            label: const Text('Mic, Camera, Calls, Notification ek saath maango'),
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(

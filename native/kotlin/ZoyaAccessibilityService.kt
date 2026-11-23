@@ -8,7 +8,9 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Path
 import android.graphics.PixelFormat
+import android.graphics.Rect
 import android.os.Build
+import android.os.Bundle
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
@@ -127,8 +129,96 @@ class ZoyaAccessibilityService : AccessibilityService() {
     }
 
     /** Screen par jis button/text par ye likha ho usko tap karo. */
+    // ---------- Suraksha: paise/bank wali apps me kuch nahi karna ----------
+    private val blockedWords = listOf(
+        "paisa", "phonepe", "paytm", "npci", "upi", "bank", "wallet",
+        "bhim", "razorpay", "payments", "finance"
+    )
+
+    private fun isBlocked(pkg: String): Boolean =
+        blockedWords.any { pkg.lowercase().contains(it) }
+
+    private fun blockedNow(): Boolean =
+        isBlocked(rootInActiveWindow?.packageName?.toString() ?: "")
+
+    /** Screen par jo dikh raha hai uski list (text, tap ho sakta hai ya nahi, jagah). */
+    fun readScreen(): String {
+        val root = rootInActiveWindow ?: return "screen nahi padh paayi"
+        val pkg = root.packageName?.toString() ?: ""
+        if (isBlocked(pkg)) {
+            return "Ye app paise ya bank se judi lagti hai ($pkg), yahan main screen nahi padhungi."
+        }
+        val out = StringBuilder("App: $pkg\n")
+        var count = 0
+        val r = Rect()
+        fun walk(n: AccessibilityNodeInfo?, depth: Int) {
+            if (n == null || count >= 70 || depth > 30) return
+            val label = (n.text?.toString() ?: "").ifBlank { n.contentDescription?.toString() ?: "" }
+            if (label.isNotBlank() && n.isVisibleToUser) {
+                n.getBoundsInScreen(r)
+                val tags = buildString {
+                    if (n.isClickable) append("tap ")
+                    if (n.isEditable) append("input ")
+                }.trim()
+                out.append("- ${label.take(80)}")
+                if (tags.isNotEmpty()) out.append(" [$tags]")
+                out.append(" @(${r.centerX()},${r.centerY()})\n")
+                count++
+            }
+            for (i in 0 until n.childCount) walk(n.getChild(i), depth + 1)
+        }
+        walk(root, 0)
+        return out.toString()
+    }
+
+    /** Screen par (x, y) jagah tap karo. */
+    fun tapXY(x: Float, y: Float): Boolean {
+        if (blockedNow()) return false
+        val p = Path().apply { moveTo(x, y) }
+        val g = GestureDescription.Builder()
+            .addStroke(GestureDescription.StrokeDescription(p, 0, 60))
+            .build()
+        return dispatchGesture(g, null, null)
+    }
+
+    private fun findEditable(n: AccessibilityNodeInfo?): AccessibilityNodeInfo? {
+        if (n == null) return null
+        if (n.isEditable) return n
+        for (i in 0 until n.childCount) {
+            val r = findEditable(n.getChild(i))
+            if (r != null) return r
+        }
+        return null
+    }
+
+    /** Jahan cursor ho (ya pehle text box me) text likho. */
+    fun typeText(text: String): Boolean {
+        if (blockedNow()) return false
+        val root = rootInActiveWindow ?: return false
+        val target = root.findFocus(AccessibilityNodeInfo.FOCUS_INPUT)
+            ?: findEditable(root) ?: return false
+        val args = Bundle().apply {
+            putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, text)
+        }
+        return target.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
+    }
+
+    /** Text box me Enter / Search dabao (Android 11+). */
+    fun submit(): Boolean {
+        if (blockedNow()) return false
+        val root = rootInActiveWindow ?: return false
+        val target = root.findFocus(AccessibilityNodeInfo.FOCUS_INPUT)
+            ?: findEditable(root) ?: return false
+        return if (Build.VERSION.SDK_INT >= 30) {
+            target.performAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_IME_ENTER.id)
+        } else {
+            false
+        }
+    }
+
     fun tapText(text: String): Boolean {
         if (text.isBlank()) return false
+        if (blockedNow()) return false
         val root = rootInActiveWindow ?: return false
         val nodes = root.findAccessibilityNodeInfosByText(text)
         for (n in nodes) {

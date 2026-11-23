@@ -34,7 +34,16 @@ class PhoneTools {
       'hai), whatsapp_message (message likhkar WhatsApp kholta hai, bhejna '
       'user ko hai), web_search, open_link, battery_status, current_time. '
       'Call ya message ke liye poora number chahiye (country code ke saath); '
-      'number na ho to user se poochho. Bhejne se pehle user se confirm karo.';
+      'number na ho to user se poochho. Bhejne se pehle user se confirm karo.\n\n'
+      'Phone khud chalana: make_call (call lagana, pehle user se confirm '
+      'karo), answer_call (aati call uthana), end_call (call kaatna), '
+      'play_music (gaana chalana), media_control (play/pause/next/previous), '
+      'read_screen (screen par kya dikh raha hai), tap_text, tap_xy, '
+      'type_text, submit_text. Kaam kai kadam me karo: pehle app kholo ya '
+      'play_music, phir read_screen se dekho, phir tap/type karo, aur har '
+      'kadam ke baad read_screen se pakka karo ki sahi hua. Paise, UPI, '
+      'bank ya password wali screen par kuch mat karo. Kuch samajh na aaye '
+      'to user se poochho.';
 
   static const declarations = <Map<String, dynamic>>[
     {
@@ -164,6 +173,77 @@ class PhoneTools {
         'required': ['url'],
       },
     },
+    {
+      'name': 'make_call',
+      'description': 'Number par seedha call lagao. Pehle user se confirm karo.',
+      'parameters': {
+        'type': 'object',
+        'properties': {
+          'number': {'type': 'string', 'description': 'Phone number'},
+        },
+        'required': ['number'],
+      },
+    },
+    {'name': 'answer_call', 'description': 'Aati hui call uthao.'},
+    {'name': 'end_call', 'description': 'Chalti hui call kaato.'},
+    {
+      'name': 'play_music',
+      'description': 'Gaana chalane ke liye music app me search karo.',
+      'parameters': {
+        'type': 'object',
+        'properties': {
+          'query': {'type': 'string', 'description': 'Gaane ya artist ka naam'},
+        },
+        'required': ['query'],
+      },
+    },
+    {
+      'name': 'media_control',
+      'description': 'Chalta hua gaana play/pause/next/previous karo.',
+      'parameters': {
+        'type': 'object',
+        'properties': {
+          'action': {
+            'type': 'string',
+            'enum': ['play_pause', 'next', 'previous', 'stop'],
+          },
+        },
+        'required': ['action'],
+      },
+    },
+    {
+      'name': 'read_screen',
+      'description':
+          'Screen par abhi kya dikh raha hai uski list (text, kya tap ho '
+          'sakta hai, aur jagah x,y).',
+    },
+    {
+      'name': 'tap_xy',
+      'description': 'Screen par x, y jagah tap karo (read_screen se jagah lo).',
+      'parameters': {
+        'type': 'object',
+        'properties': {
+          'x': {'type': 'integer'},
+          'y': {'type': 'integer'},
+        },
+        'required': ['x', 'y'],
+      },
+    },
+    {
+      'name': 'type_text',
+      'description': 'Text box me text likho.',
+      'parameters': {
+        'type': 'object',
+        'properties': {
+          'text': {'type': 'string'},
+        },
+        'required': ['text'],
+      },
+    },
+    {
+      'name': 'submit_text',
+      'description': 'Text box me Enter / Search dabao.',
+    },
     {'name': 'battery_status', 'description': 'Battery kitni hai aur charge ho rahi hai ya nahi.'},
     {'name': 'current_time', 'description': 'Abhi ka samay aur tarikh.'},
     {
@@ -263,6 +343,15 @@ class PhoneTools {
       'web_search',
       'open_link',
       'battery_status',
+      'make_call',
+      'answer_call',
+      'end_call',
+      'play_music',
+      'media_control',
+      'read_screen',
+      'tap_xy',
+      'type_text',
+      'submit_text',
     };
     if (nativeTools.contains(name)) return _pc.tool(name, args);
     if (name == 'remember') {

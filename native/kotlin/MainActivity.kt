@@ -1,6 +1,10 @@
 package com.example.assistant_app
 
 import android.Manifest
+import android.app.SearchManager
+import android.provider.MediaStore
+import android.telecom.TelecomManager
+import android.view.KeyEvent
 import android.content.IntentFilter
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
@@ -74,6 +78,10 @@ class MainActivity : FlutterActivity() {
                         checkSelfPermission(Manifest.permission.CAMERA) ==
                             PackageManager.PERMISSION_GRANTED
                     )
+                    "hasCall" -> result.success(
+                        checkSelfPermission(Manifest.permission.CALL_PHONE) ==
+                            PackageManager.PERMISSION_GRANTED
+                    )
                     "hasNotif" -> {
                         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                         result.success(nm.areNotificationsEnabled())
@@ -101,8 +109,12 @@ class MainActivity : FlutterActivity() {
                     "requestAll" -> {
                         val list = mutableListOf(
                             Manifest.permission.RECORD_AUDIO,
-                            Manifest.permission.CAMERA
+                            Manifest.permission.CAMERA,
+                            Manifest.permission.CALL_PHONE
                         )
+                        if (Build.VERSION.SDK_INT >= 26) {
+                            list.add(Manifest.permission.ANSWER_PHONE_CALLS)
+                        }
                         if (Build.VERSION.SDK_INT >= 33) {
                             list.add(Manifest.permission.POST_NOTIFICATIONS)
                         }
@@ -274,6 +286,74 @@ class MainActivity : FlutterActivity() {
                         else -> return "ye volume action nahi hai"
                     }
                     "volume badal diya"
+                }
+                "make_call" -> {
+                    val num = s("number").filter { it.isDigit() || it == '+' }
+                    if (num.isEmpty()) return "number nahi mila"
+                    if (checkSelfPermission(Manifest.permission.CALL_PHONE) !=
+                        PackageManager.PERMISSION_GRANTED
+                    ) return "Call ki permission nahi hai. App permissions me Phone calls allow karo."
+                    if (launch(Intent(Intent.ACTION_CALL, Uri.parse("tel:$num")))) "call laga di"
+                    else "call nahi lagi"
+                }
+                "answer_call" -> {
+                    if (Build.VERSION.SDK_INT < 26) return "is Android par call uthana mumkin nahi"
+                    if (checkSelfPermission(Manifest.permission.ANSWER_PHONE_CALLS) !=
+                        PackageManager.PERMISSION_GRANTED
+                    ) return "Call uthane ki permission nahi hai. App permissions me Phone calls allow karo."
+                    val tm = getSystemService(Context.TELECOM_SERVICE) as TelecomManager
+                    tm.acceptRingingCall()
+                    "call utha li"
+                }
+                "end_call" -> {
+                    if (Build.VERSION.SDK_INT < 28) return "is Android par call kaatna mumkin nahi"
+                    if (checkSelfPermission(Manifest.permission.ANSWER_PHONE_CALLS) !=
+                        PackageManager.PERMISSION_GRANTED
+                    ) return "Call kaatne ki permission nahi hai. App permissions me Phone calls allow karo."
+                    val tm = getSystemService(Context.TELECOM_SERVICE) as TelecomManager
+                    if (tm.endCall()) "call kaat di" else "abhi koi call nahi chal rahi"
+                }
+                "play_music" -> {
+                    val q = s("query")
+                    val i = Intent(MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH)
+                        .putExtra(SearchManager.QUERY, q)
+                        .putExtra(MediaStore.EXTRA_MEDIA_FOCUS, "vnd.android.cursor.item/*")
+                    if (launch(i)) {
+                        "music app me '$q' chalane ki koshish ki. Na chale to read_screen se dekho aur tap_text se gaana dabao."
+                    } else {
+                        val url = "https://www.youtube.com/results?search_query=" + Uri.encode(q)
+                        if (launch(Intent(Intent.ACTION_VIEW, Uri.parse(url))))
+                            "YouTube par '$q' search khol diya. Ab read_screen se dekhkar pehla gaana tap_text ya tap_xy se dabao."
+                        else "music nahi khula"
+                    }
+                }
+                "media_control" -> {
+                    val code = when (s("action")) {
+                        "play", "pause", "play_pause" -> KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE
+                        "next" -> KeyEvent.KEYCODE_MEDIA_NEXT
+                        "previous" -> KeyEvent.KEYCODE_MEDIA_PREVIOUS
+                        "stop" -> KeyEvent.KEYCODE_MEDIA_STOP
+                        else -> return "ye media action nahi hai"
+                    }
+                    val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                    am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code))
+                    am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code))
+                    "media key bhej di"
+                }
+                "read_screen" ->
+                    ZoyaAccessibilityService.instance?.readScreen() ?: "Accessibility ON nahi hai"
+                "tap_xy" -> {
+                    val svc = ZoyaAccessibilityService.instance ?: return "Accessibility ON nahi hai"
+                    if (svc.tapXY(n("x").toFloat(), n("y").toFloat())) "tap kar diya"
+                    else "tap nahi hua (ya ye app surakshit list me hai)"
+                }
+                "type_text" -> {
+                    val svc = ZoyaAccessibilityService.instance ?: return "Accessibility ON nahi hai"
+                    if (svc.typeText(s("text"))) "text likh diya" else "text nahi likha gaya"
+                }
+                "submit_text" -> {
+                    val svc = ZoyaAccessibilityService.instance ?: return "Accessibility ON nahi hai"
+                    if (svc.submit()) "enter dab gaya" else "enter nahi dab paya"
                 }
                 "dial_number" -> {
                     val num = s("number").filter { it.isDigit() || it == '+' }
