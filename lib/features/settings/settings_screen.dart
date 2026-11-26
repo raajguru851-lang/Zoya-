@@ -12,12 +12,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _service = SettingsService();
   final _controller = TextEditingController();
   bool _hide = true;
+  bool _toolLog = true;
 
   @override
   void initState() {
     super.initState();
     _service.getApiKey().then((k) {
       if (mounted) _controller.text = k ?? '';
+    });
+    _service.getToolLog().then((v) {
+      if (mounted) setState(() => _toolLog = v);
     });
   }
 
@@ -61,6 +65,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 16),
             FilledButton(onPressed: _save, child: const Text('Save')),
+            const SizedBox(height: 16),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Chat me "tool log" dikhao'),
+              subtitle: const Text(
+                  'Jawab ke neeche dikhta hai ki Sara ne kaunsa kaam/tool '
+                  'chalaya aur uska natija kya aaya (jaanch ke liye).'),
+              value: _toolLog,
+              onChanged: (v) async {
+                await _service.setToolLog(v);
+                setState(() => _toolLog = v);
+              },
+            ),
           ],
         ),
       ),

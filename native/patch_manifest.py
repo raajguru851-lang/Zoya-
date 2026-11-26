@@ -29,8 +29,7 @@ service = '''
 perms = ''.join(
     '<uses-permission android:name="android.permission.%s"/>\n    ' % p
     for p in ['FOREGROUND_SERVICE', 'FOREGROUND_SERVICE_MICROPHONE', 'POST_NOTIFICATIONS', 'CAMERA',
-              'CALL_PHONE', 'ANSWER_PHONE_CALLS',
-              'FOREGROUND_SERVICE_CAMERA', 'WAKE_LOCK']
+              'CALL_PHONE', 'ANSWER_PHONE_CALLS', 'READ_CONTACTS']
 )
 perms += '<uses-permission android:name="com.android.alarm.permission.SET_ALARM"/>\n    '
 s = s.replace('<application', perms + '<application', 1)
@@ -40,12 +39,6 @@ service += '''
             android:name=".ZoyaForegroundService"
             android:exported="false"
             android:foregroundServiceType="microphone"/>
-    '''
-service += '''
-        <service
-            android:name=".GuardService"
-            android:exported="false"
-            android:foregroundServiceType="camera"/>
     '''
 s = s.replace('</application>', service + '</application>', 1)
 open(p, 'w').write(s)

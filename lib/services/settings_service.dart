@@ -127,36 +127,14 @@ class SettingsService {
     await prefs.setString('wake_phrases_v3', text.trim());
   }
 
-  // ---------- Touch Guard ----------
-  Future<String> getGuardOwner() async {
+  /// Chat me "kaunsa tool chala" ki line dikhao (jaanch ke liye).
+  Future<bool> getToolLog() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('guard_owner') ?? 'Mr ZX KD';
+    return prefs.getBool('tool_log') ?? true;
   }
 
-  Future<void> setGuardOwner(String v) async {
+  Future<void> setToolLog(bool v) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('guard_owner', v.trim());
-  }
-
-  /// 0 kam, 1 madhyam, 2 zyada
-  Future<int> getGuardSens() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt('guard_sens') ?? 1;
-  }
-
-  Future<void> setGuardSens(int v) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('guard_sens', v);
-  }
-
-  /// Hilne ke baad siren se pehle kitne second ka mauka (0, 3, 5).
-  Future<int> getGuardDelay() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt('guard_delay') ?? 3;
-  }
-
-  Future<void> setGuardDelay(int v) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('guard_delay', v);
+    await prefs.setBool('tool_log', v);
   }
 }

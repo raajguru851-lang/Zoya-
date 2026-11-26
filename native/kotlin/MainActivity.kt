@@ -1,7 +1,7 @@
 package com.example.assistant_app
 
 import android.Manifest
-import java.io.File
+import android.provider.ContactsContract
 import android.app.SearchManager
 import android.provider.MediaStore
 import android.telecom.TelecomManager
@@ -83,6 +83,10 @@ class MainActivity : FlutterActivity() {
                         checkSelfPermission(Manifest.permission.CALL_PHONE) ==
                             PackageManager.PERMISSION_GRANTED
                     )
+                    "hasContacts" -> result.success(
+                        checkSelfPermission(Manifest.permission.READ_CONTACTS) ==
+                            PackageManager.PERMISSION_GRANTED
+                    )
                     "hasNotif" -> {
                         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                         result.success(nm.areNotificationsEnabled())
@@ -111,7 +115,8 @@ class MainActivity : FlutterActivity() {
                         val list = mutableListOf(
                             Manifest.permission.RECORD_AUDIO,
                             Manifest.permission.CAMERA,
-                            Manifest.permission.CALL_PHONE
+                            Manifest.permission.CALL_PHONE,
+                            Manifest.permission.READ_CONTACTS
                         )
                         if (Build.VERSION.SDK_INT >= 26) {
                             list.add(Manifest.permission.ANSWER_PHONE_CALLS)
@@ -151,48 +156,6 @@ class MainActivity : FlutterActivity() {
                     }
                     "keepAliveStop" -> {
                         ZoyaForegroundService.instance?.releaseKeepAlive()
-                        result.success(true)
-                    }
-                    "guardStart" -> {
-                        try {
-                            val args = call.arguments as? Map<*, *>
-                            val i = Intent(this, GuardService::class.java)
-                                .putExtra("owner", args?.get("owner")?.toString() ?: "")
-                                .putExtra("sens", (args?.get("sens") as? Number)?.toInt() ?: 1)
-                                .putExtra("delay", (args?.get("delay") as? Number)?.toInt() ?: 3)
-                                .putExtra("action", args?.get("action")?.toString() ?: "arm")
-                            if (Build.VERSION.SDK_INT >= 26) startForegroundService(i)
-                            else startService(i)
-                            result.success(true)
-                        } catch (e: Exception) {
-                            result.success(false)
-                        }
-                    }
-                    "guardStop" -> {
-                        val g = GuardService.instance
-                        if (g != null) g.disarm()
-                        else stopService(Intent(this, GuardService::class.java))
-                        GuardService.status = "idle"
-                        result.success(true)
-                    }
-                    "guardStatus" -> result.success(GuardService.status)
-                    "guardPhotos" -> {
-                        val files = GuardService.photosDir(this).listFiles()
-                            ?.filter { it.extension == "jpg" }
-                            ?.sortedByDescending { it.lastModified() }
-                            ?.map { it.absolutePath } ?: emptyList()
-                        result.success(files)
-                    }
-                    "guardDeletePhoto" -> {
-                        val p = call.arguments?.toString()
-                        if (p != null) {
-                            val f = File(p)
-                            if (f.parentFile == GuardService.photosDir(this)) f.delete()
-                        }
-                        result.success(true)
-                    }
-                    "guardClearPhotos" -> {
-                        GuardService.photosDir(this).listFiles()?.forEach { it.delete() }
                         result.success(true)
                     }
                     "wakeStop" -> {
@@ -397,6 +360,71 @@ class MainActivity : FlutterActivity() {
                 "submit_text" -> {
                     val svc = ZoyaAccessibilityService.instance ?: return "Accessibility ON nahi hai"
                     if (svc.submit()) "enter dab gaya" else "enter nahi dab paya"
+                }
+                "find_contact" -> {
+                    if (checkSelfPermission(Manifest.permission.READ_CONTACTS) !=
+                        PackageManager.PERMISSION_GRANTED
+                    ) return "Contacts ki permission nahi hai. App permissions me Contacts allow karo."
+                    val names = listOf(s("name"), s("alt_name"))
+                        .map { it.trim() }.filter { it.isNotEmpty() }
+                    if (names.isEmpty()) return "naam nahi mila"
+
+                    // Milte-julte naam: Mummy = Mom/Maa, Papa = Dad, waghera
+                    val synonyms = mapOf(
+                        "mummy" to listOf("mom", "maa", "mother", "mumma", "mama"),
+                        "mom" to listOf("mummy", "maa", "mother", "mumma"),
+                        "maa" to listOf("mummy", "mom", "mother", "mumma"),
+                        "papa" to listOf("dad", "father", "pappa", "baba"),
+                        "dad" to listOf("papa", "father", "pappa"),
+                        "bhai" to listOf("brother", "bhaiya"),
+                        "didi" to listOf("sister", "di"),
+                        "wife" to listOf("biwi", "patni", "jaan"),
+                        "husband" to listOf("pati")
+                    )
+                    // Pehle poora naam, phir alag-alag shabd, phir milte-julte naam
+                    val queries = LinkedHashSet<String>()
+                    for (n in names) queries.add(n)
+                    for (n in names) n.split(" ").filter { it.length >= 2 }.forEach { queries.add(it) }
+                    for (n in names) synonyms[n.lowercase()]?.let { queries.addAll(it) }
+
+                    val sb = StringBuilder()
+                    var count = 0
+                    val seen = HashSet<String>()
+                    fun search(q: String) {
+                        contentResolver.query(
+                            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                            arrayOf(
+                                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                                ContactsContract.CommonDataKinds.Phone.NUMBER
+                            ),
+                            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " LIKE ?",
+                            arrayOf("%$q%"),
+                            null
+                        )?.use { c ->
+                            while (c.moveToNext() && count < 6) {
+                                val name = c.getString(0) ?: ""
+                                val num = (c.getString(1) ?: "").filter { it.isDigit() || it == '+' }
+                                if (num.isNotEmpty() && seen.add("$name|$num")) {
+                                    sb.append("$name: $num\n")
+                                    count++
+                                }
+                            }
+                        }
+                    }
+                    for (q in queries) {
+                        search(q)
+                        if (count > 0) break
+                    }
+                    if (count == 0) {
+                        val total = contentResolver.query(
+                            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                            arrayOf(ContactsContract.CommonDataKinds.Phone._ID),
+                            null, null, null
+                        )?.use { it.count } ?: -1
+                        "'${names.first()}' naam ka koi contact nahi mila (phone me $total contact numbers padhe gaye)"
+                    } else {
+                        sb.toString().trim()
+                    }
                 }
                 "dial_number" -> {
                     val num = s("number").filter { it.isDigit() || it == '+' }

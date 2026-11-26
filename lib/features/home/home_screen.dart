@@ -131,8 +131,6 @@ class _HomeScreenState extends State<HomeScreen> {
             _tile(Icons.forum_outlined, 'WhatsApp Automation', soon: true),
             _tile(Icons.hearing, 'Wake Word',
                 sub: 'Wake up Sara', route: AppRoutes.wake),
-            _tile(Icons.shield_outlined, 'Touch Guard',
-                sub: 'Chor se bachao', route: AppRoutes.guard),
             _tile(Icons.terminal, 'Termux agent', soon: true),
             _tile(Icons.security, 'App permissions',
                 route: AppRoutes.permissions),

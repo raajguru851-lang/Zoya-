@@ -67,6 +67,7 @@ class AssistantService {
 
     try {
       // Tool chalane ke baad AI ko natija dena padta hai, isliye loop.
+      final toolLog = <String>[];
       for (var step = 0; step < 12; step++) {
         final res = await http
             .post(
@@ -104,8 +105,12 @@ class AssistantService {
             parts.where((p) => p is Map && p['functionCall'] != null).toList();
 
         if (calls.isEmpty) {
-          final text = parts.map((p) => p['text'] ?? '').join();
-          return text.isEmpty ? 'Ho gaya.' : text;
+          var text = parts.map((p) => p['text'] ?? '').join();
+          if (text.isEmpty) text = 'Ho gaya.';
+          if (toolLog.isNotEmpty && await _settings.getToolLog()) {
+            text += '\n\n\u{1F527} ${toolLog.join('\n')}';
+          }
+          return text;
         }
 
         // AI ka poora message jaise ka taisa wapas bhejna zaroori hai.
@@ -116,6 +121,9 @@ class AssistantService {
           final fc = c['functionCall'];
           final args = Map<String, dynamic>.from((fc['args'] as Map?) ?? {});
           final result = await PhoneTools.run('${fc['name']}', args);
+          final shown =
+              result.length > 160 ? '${result.substring(0, 160)}...' : result;
+          toolLog.add('${fc['name']}(${args.values.join(', ')}) -> $shown');
           responses.add({
             'functionResponse': {
               'name': fc['name'],

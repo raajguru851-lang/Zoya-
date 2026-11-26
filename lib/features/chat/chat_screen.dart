@@ -42,6 +42,8 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _remember(String user, String reply) async {
+    // "tool chala" wali jaanch line yaaddaasht me mat daalo
+    reply = reply.split('\n\n\u{1F527}').first;
     final bad = reply.startsWith('Error:') ||
         reply.startsWith('Internet ya connection') ||
         reply.startsWith('Pehle ') ||

@@ -33,8 +33,13 @@ class PhoneTools {
       'set_timer, flashlight, set_volume, dial_number (sirf dialer kholta '
       'hai), whatsapp_message (message likhkar WhatsApp kholta hai, bhejna '
       'user ko hai), web_search, open_link, battery_status, current_time. '
-      'Call ya message ke liye poora number chahiye (country code ke saath); '
-      'number na ho to user se poochho. Bhejne se pehle user se confirm karo.\n\n'
+      'Call ya message ke liye poora number chahiye (country code ke saath). '
+      'User kisi ka NAAM bole (jaise "Rahul ko call lagao") to pehle '
+      'find_contact call karo (name Roman me, alt_name Hindi spelling me). '
+      'Kai naam mile to user se poochho kaunsa. '
+      'Number mile to user ko naam bata kar confirm karo, phir call ya '
+      'message karo. Number na mile to user se poochho. Bhejne se pehle user '
+      'se confirm karo.\n\n'
       'Phone khud chalana: make_call (call lagana, pehle user se confirm '
       'karo), answer_call (aati call uthana), end_call (call kaatna), '
       'play_music (gaana chalana), media_control (play/pause/next/previous), '
@@ -171,6 +176,26 @@ class PhoneTools {
           'url': {'type': 'string', 'description': 'Link'},
         },
         'required': ['url'],
+      },
+    },
+    {
+      'name': 'find_contact',
+      'description':
+          'Contacts me naam se phone number dhoondo (call ya message se pehle).',
+      'parameters': {
+        'type': 'object',
+        'properties': {
+          'name': {
+            'type': 'string',
+            'description': 'Contact ka naam Roman (English) spelling me',
+          },
+          'alt_name': {
+            'type': 'string',
+            'description':
+                'Wahi naam Hindi (Devanagari) spelling me, jaise राहुल',
+          },
+        },
+        'required': ['name'],
       },
     },
     {
@@ -343,6 +368,7 @@ class PhoneTools {
       'web_search',
       'open_link',
       'battery_status',
+      'find_contact',
       'make_call',
       'answer_call',
       'end_call',

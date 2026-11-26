@@ -13,6 +13,7 @@ class _ControlScreenState extends State<ControlScreen>
   final _pc = PhoneControl();
   final _appCtrl = TextEditingController();
   final _tapCtrl = TextEditingController();
+  final _contactCtrl = TextEditingController();
   bool _enabled = false;
   String _msg = '';
 
@@ -28,6 +29,7 @@ class _ControlScreenState extends State<ControlScreen>
     WidgetsBinding.instance.removeObserver(this);
     _appCtrl.dispose();
     _tapCtrl.dispose();
+    _contactCtrl.dispose();
     super.dispose();
   }
 
@@ -117,6 +119,24 @@ class _ControlScreenState extends State<ControlScreen>
           const SizedBox(height: 8),
           _btn('Tap karo', Icons.touch_app_outlined,
               () => _pc.tapText(_tapCtrl.text)),
+          const SizedBox(height: 20),
+          TextField(
+            controller: _contactCtrl,
+            decoration: const InputDecoration(
+              labelText: 'Contact ka naam (jaanch ke liye)',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 8),
+          FilledButton.tonalIcon(
+            onPressed: () async {
+              final r = await _pc.tool(
+                  'find_contact', {'name': _contactCtrl.text, 'alt_name': ''});
+              if (mounted) setState(() => _msg = r);
+            },
+            icon: const Icon(Icons.contacts_outlined),
+            label: const Text('Contact dhundo'),
+          ),
           const SizedBox(height: 16),
           Text(_msg),
         ],
