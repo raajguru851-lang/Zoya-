@@ -161,4 +161,55 @@ class PhoneControl {
       return 'nahi ho paya: ${e.message}';
     }
   }
+
+  // ---------- Touch Guard ----------
+  Future<bool> guardStart(String owner, int sens, int delay,
+      {String action = 'arm'}) async {
+    try {
+      return (await _ch.invokeMethod<bool>('guardStart', {
+            'owner': owner,
+            'sens': sens,
+            'delay': delay,
+            'action': action,
+          })) ??
+          false;
+    } on PlatformException {
+      return false;
+    }
+  }
+
+  Future<bool> guardStop() => _ask('guardStop');
+
+  Future<String> guardStatus() async {
+    try {
+      return (await _ch.invokeMethod<String>('guardStatus')) ?? 'idle';
+    } on PlatformException {
+      return 'idle';
+    }
+  }
+
+  Future<List<String>> guardPhotos() async {
+    try {
+      final r = await _ch.invokeMethod<List<dynamic>>('guardPhotos');
+      return (r ?? []).map((e) => '$e').toList();
+    } on PlatformException {
+      return [];
+    }
+  }
+
+  Future<void> guardDeletePhoto(String path) async {
+    try {
+      await _ch.invokeMethod('guardDeletePhoto', path);
+    } on PlatformException {
+      // ignore
+    }
+  }
+
+  Future<void> guardClearPhotos() async {
+    try {
+      await _ch.invokeMethod('guardClearPhotos');
+    } on PlatformException {
+      // ignore
+    }
+  }
 }

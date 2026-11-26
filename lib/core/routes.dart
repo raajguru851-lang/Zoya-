@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../features/camera/camera_screen.dart';
 import '../features/character/character_screen.dart';
 import '../features/control/control_screen.dart';
+import '../features/guard/guard_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/chat/chat_screen.dart';
 import '../features/memory/memory_screen.dart';
@@ -14,6 +15,7 @@ import '../features/wake/wake_screen.dart';
 /// Naya screen add karna ho to yahan ek route jodo.
 class AppRoutes {
   static const home = '/';
+  static const guard = '/guard';
   static const chat = '/chat';
   static const camera = '/camera';
   static const character = '/character';
@@ -27,6 +29,7 @@ class AppRoutes {
 
   static final Map<String, WidgetBuilder> routes = {
     home: (_) => const HomeScreen(),
+    guard: (_) => const GuardScreen(),
     chat: (_) => const ChatScreen(),
     camera: (_) => const CameraScreen(),
     character: (_) => const CharacterScreen(),

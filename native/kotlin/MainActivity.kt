@@ -1,6 +1,7 @@
 package com.example.assistant_app
 
 import android.Manifest
+import java.io.File
 import android.app.SearchManager
 import android.provider.MediaStore
 import android.telecom.TelecomManager
@@ -150,6 +151,48 @@ class MainActivity : FlutterActivity() {
                     }
                     "keepAliveStop" -> {
                         ZoyaForegroundService.instance?.releaseKeepAlive()
+                        result.success(true)
+                    }
+                    "guardStart" -> {
+                        try {
+                            val args = call.arguments as? Map<*, *>
+                            val i = Intent(this, GuardService::class.java)
+                                .putExtra("owner", args?.get("owner")?.toString() ?: "")
+                                .putExtra("sens", (args?.get("sens") as? Number)?.toInt() ?: 1)
+                                .putExtra("delay", (args?.get("delay") as? Number)?.toInt() ?: 3)
+                                .putExtra("action", args?.get("action")?.toString() ?: "arm")
+                            if (Build.VERSION.SDK_INT >= 26) startForegroundService(i)
+                            else startService(i)
+                            result.success(true)
+                        } catch (e: Exception) {
+                            result.success(false)
+                        }
+                    }
+                    "guardStop" -> {
+                        val g = GuardService.instance
+                        if (g != null) g.disarm()
+                        else stopService(Intent(this, GuardService::class.java))
+                        GuardService.status = "idle"
+                        result.success(true)
+                    }
+                    "guardStatus" -> result.success(GuardService.status)
+                    "guardPhotos" -> {
+                        val files = GuardService.photosDir(this).listFiles()
+                            ?.filter { it.extension == "jpg" }
+                            ?.sortedByDescending { it.lastModified() }
+                            ?.map { it.absolutePath } ?: emptyList()
+                        result.success(files)
+                    }
+                    "guardDeletePhoto" -> {
+                        val p = call.arguments?.toString()
+                        if (p != null) {
+                            val f = File(p)
+                            if (f.parentFile == GuardService.photosDir(this)) f.delete()
+                        }
+                        result.success(true)
+                    }
+                    "guardClearPhotos" -> {
+                        GuardService.photosDir(this).listFiles()?.forEach { it.delete() }
                         result.success(true)
                     }
                     "wakeStop" -> {
