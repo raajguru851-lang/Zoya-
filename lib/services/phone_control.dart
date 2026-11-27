@@ -162,4 +162,17 @@ class PhoneControl {
       return 'nahi ho paya: ${e.message}';
     }
   }
+
+  // ---------- WhatsApp auto-reply ----------
+  Future<bool> autoAccess() => _ask('autoAccess');
+  Future<bool> openNotifAccess() => _ask('openNotifAccess');
+  Future<bool> autoLogClear() => _ask('autoLogClear');
+
+  Future<String> autoLog() async {
+    try {
+      return (await _ch.invokeMethod<String>('autoLog')) ?? '';
+    } on PlatformException {
+      return '';
+    }
+  }
 }

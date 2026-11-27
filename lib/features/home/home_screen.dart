@@ -128,7 +128,8 @@ class _HomeScreenState extends State<HomeScreen> {
           neonRows([
             _tile(Icons.phone_android, 'Phone control',
                 route: AppRoutes.control),
-            _tile(Icons.forum_outlined, 'WhatsApp Automation', soon: true),
+            _tile(Icons.forum_outlined, 'WhatsApp auto-reply',
+                route: AppRoutes.autoreply),
             _tile(Icons.hearing, 'Wake Word',
                 sub: 'Wake up Sara', route: AppRoutes.wake),
             _tile(Icons.terminal, 'Termux agent', soon: true),

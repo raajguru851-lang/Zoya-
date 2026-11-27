@@ -40,6 +40,17 @@ service += '''
             android:exported="false"
             android:foregroundServiceType="microphone"/>
     '''
+service += '''
+        <service
+            android:name=".SaraNotificationListener"
+            android:exported="true"
+            android:label="Sara"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService"/>
+            </intent-filter>
+        </service>
+    '''
 s = s.replace('</application>', service + '</application>', 1)
 open(p, 'w').write(s)
 print('manifest patched')

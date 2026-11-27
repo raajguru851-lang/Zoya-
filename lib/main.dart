@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'core/constants.dart';
 import 'core/theme.dart';
 import 'core/routes.dart';
+import 'services/auto_reply_service.dart';
 import 'services/wake_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   WakeService.instance.init();
+  AutoReplyService.instance.init();
   runApp(const AssistantApp());
 }
 

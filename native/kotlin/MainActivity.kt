@@ -182,6 +182,24 @@ class MainActivity : FlutterActivity() {
                         val a = call.arguments as? Map<*, *> ?: emptyMap<Any, Any>()
                         result.success(runTool(a))
                     }
+                    "autoAccess" -> {
+                        val enabled = Settings.Secure
+                            .getString(contentResolver, "enabled_notification_listeners")
+                            ?.contains(packageName) == true
+                        result.success(enabled)
+                    }
+                    "openNotifAccess" -> {
+                        startActivity(
+                            Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        )
+                        result.success(true)
+                    }
+                    "autoLog" -> result.success(SaraNotificationListener.readLog(this))
+                    "autoLogClear" -> {
+                        SaraNotificationListener.clearLog(this)
+                        result.success(true)
+                    }
                     "refreshBorder" -> {
                         svc?.refreshBorder()
                         result.success(svc != null)

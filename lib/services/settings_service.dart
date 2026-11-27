@@ -137,4 +137,52 @@ class SettingsService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('tool_log', v);
   }
+
+  // ---------- WhatsApp auto-reply ----------
+  Future<SharedPreferences> get _pp => SharedPreferences.getInstance();
+
+  Future<bool> getAutoOn() async => (await _pp).getBool('auto_on') ?? false;
+  Future<void> setAutoOn(bool v) async => (await _pp).setBool('auto_on', v);
+
+  /// false: sirf list ke log. true: sabko (group chat phir bhi nahi).
+  Future<bool> getAutoAll() async => (await _pp).getBool('auto_all') ?? false;
+  Future<void> setAutoAll(bool v) async => (await _pp).setBool('auto_all', v);
+
+  /// Chune hue logon ke naam, har naam nayi line me (WhatsApp me jaisa dikhta hai).
+  Future<List<String>> getAutoContacts() async {
+    final t = (await _pp).getString('auto_contacts') ?? '';
+    return t.split('\n').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+  }
+
+  Future<void> setAutoContacts(List<String> v) async =>
+      (await _pp).setString('auto_contacts', v.join('\n'));
+
+  /// 'ai' ya 'fixed'
+  Future<String> getAutoStyle() async => (await _pp).getString('auto_style') ?? 'ai';
+  Future<void> setAutoStyle(String v) async => (await _pp).setString('auto_style', v);
+
+  Future<String> getAutoFixed() async =>
+      (await _pp).getString('auto_fixed') ?? 'Main abhi busy hoon, thodi der me baat karta hoon.';
+  Future<void> setAutoFixed(String v) async => (await _pp).setString('auto_fixed', v);
+
+  /// Jawab ke neeche judne wali line (batati hai ki ye AI ne likha hai).
+  Future<String> getAutoSig() async =>
+      (await _pp).getString('auto_sig') ?? '— Sara (AI assistant)';
+  Future<void> setAutoSig(String v) async => (await _pp).setString('auto_sig', v);
+
+  Future<String> getAutoOwner() async => (await _pp).getString('auto_owner') ?? 'Kuldeep';
+  Future<void> setAutoOwner(String v) async => (await _pp).setString('auto_owner', v);
+
+  Future<int> getAutoCooldown() async => (await _pp).getInt('auto_cooldown') ?? 10;
+  Future<void> setAutoCooldown(int v) async => (await _pp).setInt('auto_cooldown', v);
+
+  /// Jawab banate waqt Memory ki yaadein bhi use karo (nijii baatein leak ho sakti hain).
+  Future<bool> getAutoMem() async => (await _pp).getBool('auto_mem') ?? false;
+  Future<void> setAutoMem(bool v) async => (await _pp).setBool('auto_mem', v);
+
+  /// Auto-reply ka andaaz (AI ko batane ke liye).
+  Future<String> getAutoTone() async =>
+      (await _pp).getString('auto_tone') ??
+      'Dosti bhare, chhote aur natural andaaz me';
+  Future<void> setAutoTone(String v) async => (await _pp).setString('auto_tone', v);
 }
