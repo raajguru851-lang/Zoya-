@@ -439,7 +439,12 @@ class MainActivity : FlutterActivity() {
                             arrayOf(ContactsContract.CommonDataKinds.Phone._ID),
                             null, null, null
                         )?.use { it.count } ?: -1
-                        "'${names.first()}' naam ka koi contact nahi mila (phone me $total contact numbers padhe gaye)"
+                        val all = contentResolver.query(
+                            ContactsContract.Contacts.CONTENT_URI,
+                            arrayOf(ContactsContract.Contacts._ID),
+                            null, null, null
+                        )?.use { it.count } ?: -1
+                        "'${names.first()}' naam ka koi contact nahi mila (phone me $total contact numbers aur $all contacts padhe gaye)"
                     } else {
                         sb.toString().trim()
                     }
